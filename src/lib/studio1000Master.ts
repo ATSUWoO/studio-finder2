@@ -25,6 +25,18 @@ export const STUDIO1000_STUDIO_MASTER: S1StudioMaster[] = [
     lat: 34.7001,
     lng: 135.5042,
   },
+  {
+    nameKeywords: ["KYOBASHI", "Kyobashi", "京橋", "Europe"],
+    address: "大阪市城東区",
+    lat: 34.6971173,
+    lng: 135.5342135,
+  },
+  {
+    nameKeywords: ["NANBA", "Namba", "難波", "Amemura", "アメ村"],
+    address: "大阪市西区",
+    lat: 34.6862099,
+    lng: 135.4811102,
+  },
 ]
 
 export function findStudioMaster(studioId: number, studioName: string): S1StudioMaster | null {

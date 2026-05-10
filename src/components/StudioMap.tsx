@@ -82,10 +82,10 @@ export default function StudioMap({ venues, selectedId, onSelectVenue }: Props) 
           const icon = L.divIcon({
             className: "",
             html: `<div class="map-pin ${isSelected ? "map-pin--selected" : ""}">
-              <span>${venue.name.slice(0, 6)}</span>
+              <span>${venue.name}</span>
             </div>`,
-            iconSize: [120, 36],
-            iconAnchor: [60, 36],
+            iconSize: [160, 36],
+            iconAnchor: [80, 36],
           })
 
           const marker = L.marker([venue.lat, venue.lng], { icon })
@@ -108,15 +108,15 @@ export default function StudioMap({ venues, selectedId, onSelectVenue }: Props) 
 
         const isSelected = id === selectedId
         const html = `<div class="map-pin ${isSelected ? "map-pin--selected" : ""}">
-          <span>${venue.name.slice(0, 6)}</span>
+          <span>${venue.name}</span>
         </div>`
 
         marker.setIcon(
           L.divIcon({
             className: "",
             html,
-            iconSize: [120, 36],
-            iconAnchor: [60, 36],
+            iconSize: [160, 36],
+            iconAnchor: [80, 36],
           })
         )
       }
