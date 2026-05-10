@@ -110,6 +110,7 @@ export class Studio1000Provider implements AvailabilityProvider {
       if (!studioMap.has(room.studio.id)) {
         const master = findStudio1000Venue(room.studio.id, room.studio.name)
 
+        // マスターにない場合はAPIの座標を検証して使用
         const apiCoords = room.studio.location?.coordinates
         const fixedApiCoords = apiCoords ? fixCoords(apiCoords) : null
         const validApiCoords =
