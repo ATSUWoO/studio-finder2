@@ -1,36 +1,69 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# スタジオファインダー
 
-## Getting Started
+大阪市内のダンス・レンタルスタジオを検索できるWebアプリです。料金・定員・時間帯で絞り込み、地図上でスタジオを探せます。
 
-First, run the development server:
+## 機能
+
+- **ライブフィルタリング** — 料金・定員・時間帯・フリーテキストで即座に絞り込み
+- **地図連動** — 地図のピンと一覧カードが双方向に連動
+- **2層データ構造** — 店舗（venue）と部屋（room）を分けて管理
+- **マルチソース対応** — 複数の予約サイトからデータを収集できるスクレイパー基盤
+
+## ローカルでの起動
 
 ```bash
+# 依存パッケージをインストール
+npm install
+
+# 開発サーバーを起動
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+http://localhost:3000 をブラウザで開いてください。
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 技術スタック
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| 用途 | 技術 |
+|------|------|
+| フロントエンド | Next.js 16 (App Router) + TypeScript |
+| スタイリング | Tailwind CSS |
+| 地図 | Leaflet + CartoDB Voyager tiles |
+| データベース | Supabase (PostgreSQL) |
+| スクレイピング | Playwright / Cheerio |
 
-## Learn More
+## プロジェクト構成
 
-To learn more about Next.js, take a look at the following resources:
+```
+src/
+├── app/
+│   ├── page.tsx              # 検索トップページ
+│   ├── api/venues/route.ts   # 検索API
+│   └── venues/[id]/page.tsx  # 店舗詳細ページ
+├── components/
+│   ├── SearchFilters.tsx     # 絞り込みフォーム
+│   ├── StudioList.tsx        # 一覧表示
+│   ├── StudioCard.tsx        # 店舗カード
+│   └── StudioMap.tsx         # 地図コンポーネント
+├── data/demo.ts              # デモデータ（大阪市10店舗）
+├── lib/
+│   ├── types.ts              # 型定義
+│   └── utils.ts              # ユーティリティ関数
+└── scrapers/
+    ├── base.ts               # BaseScraper抽象クラス
+    ├── registry.ts           # スクレイパー一覧
+    ├── runner.ts             # 一括実行スクリプト
+    └── sites/
+        ├── spacemarket.ts    # スペースマーケット用
+        └── instabas.ts       # インスタベース用
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 環境変数
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Supabaseに接続する場合は `.env.local` を作成してください。
 
-## Deploy on Vercel
+```
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+現在はデモデータ（`src/data/demo.ts`）を使用しているため、Supabaseなしでも動作します。
