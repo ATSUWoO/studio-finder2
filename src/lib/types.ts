@@ -33,6 +33,7 @@ export interface SearchFilters {
   minCapacity: number | null
   openHour: number | null
   closeHour: number | null
+  date: string
 }
 
 export interface VenueSearchResult extends Venue {
