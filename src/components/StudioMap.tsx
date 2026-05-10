@@ -2,7 +2,6 @@
 
 import { useEffect, useRef } from "react"
 import { VenueSearchResult } from "@/lib/types"
-import { formatPrice } from "@/lib/utils"
 
 interface Props {
   venues: VenueSearchResult[]
@@ -22,9 +21,7 @@ export default function StudioMap({ venues, selectedId, onSelectVenue }: Props) 
     if (typeof window === "undefined") return
     if (!containerRef.current) return
     if (mapRef.current) return
-
     import("leaflet").then((L) => {
-      // Leafletのデフォルトアイコンパスを修正
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       delete (L.Icon.Default.prototype as any)._getIconUrl
       L.Icon.Default.mergeOptions({
@@ -32,100 +29,46 @@ export default function StudioMap({ venues, selectedId, onSelectVenue }: Props) 
         iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
         shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
       })
-
-      const map = L.map(containerRef.current!, {
-        center: OSAKA_CENTER,
-        zoom: DEFAULT_ZOOM,
-        zoomControl: true,
-      })
-
+      const map = L.map(containerRef.current!, { center: OSAKA_CENTER, zoom: DEFAULT_ZOOM, zoomControl: true })
       L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
         maxZoom: 19,
       }).addTo(map)
-
       mapRef.current = map
     })
-
-    return () => {
-      mapRef.current?.remove()
-      mapRef.current = null
-      markersRef.current.clear()
-    }
+    return () => { mapRef.current?.remove(); mapRef.current = null; markersRef.current.clear() }
   }, [])
 
-  // マーカーを同期
   useEffect(() => {
     if (!mapRef.current) return
-    const map = mapRef.current
-
     import("leaflet").then((L) => {
       const currentIds = new Set(venues.map((v) => v.id))
-      const existingIds = new Set(markersRef.current.keys())
-
-      // 削除されたマーカーを除去
-      for (const id of existingIds) {
-        if (!currentIds.has(id)) {
-          markersRef.current.get(id)?.remove()
-          markersRef.current.delete(id)
-        }
+      for (const id of markersRef.current.keys()) {
+        if (!currentIds.has(id)) { markersRef.current.get(id)?.remove(); markersRef.current.delete(id) }
       }
-
-      // 新しいマーカーを追加・更新
       for (const venue of venues) {
         if (!venue.lat || !venue.lng) continue
-
         if (!markersRef.current.has(venue.id)) {
-          const isSelected = venue.id === selectedId
-
-          const icon = L.divIcon({
-            className: "",
-            html: `<div class="map-pin ${isSelected ? "map-pin--selected" : ""}">
-              <span>${venue.name.slice(0, 6)}</span>
-            </div>`,
-            iconSize: [120, 36],
-            iconAnchor: [60, 36],
-          })
-
-          const marker = L.marker([venue.lat, venue.lng], { icon })
-            .addTo(map)
-            .on("click", () => onSelectVenue(venue))
-
+          const icon = L.divIcon({ className: "", html: `<div class="map-pin ${venue.id === selectedId ? "map-pin--selected" : ""}><span>${venue.name.slice(0, 6)}</span></div>`, iconSize: [120, 36], iconAnchor: [60, 36] })
+          const marker = L.marker([venue.lat, venue.lng], { icon }).addTo(mapRef.current!).on("click", () => onSelectVenue(venue))
           markersRef.current.set(venue.id, marker)
         }
       }
     })
   }, [venues, onSelectVenue, selectedId])
 
-  // 選択状態の更新
   useEffect(() => {
     if (!mapRef.current) return
-
     import("leaflet").then((L) => {
       for (const [id, marker] of markersRef.current) {
         const venue = venues.find((v) => v.id === id)
         if (!venue) continue
-
         const isSelected = id === selectedId
-        const html = `<div class="map-pin ${isSelected ? "map-pin--selected" : ""}">
-          <span>${venue.name.slice(0, 6)}</span>
-        </div>`
-
-        marker.setIcon(
-          L.divIcon({
-            className: "",
-            html,
-            iconSize: [120, 36],
-            iconAnchor: [60, 36],
-          })
-        )
+        marker.setIcon(L.divIcon({ className: "", html: `<div class="map-pin ${isSelected ? "map-pin--selected" : ""}><span>${venue.name.slice(0, 6)}</span></div>`, iconSize: [120, 36], iconAnchor: [60, 36] }))
       }
-
       if (selectedId) {
         const venue = venues.find((v) => v.id === selectedId)
-        if (venue?.lat && venue?.lng) {
-          mapRef.current?.panTo([venue.lat, venue.lng], { animate: true })
-        }
+        if (venue?.lat && venue?.lng) mapRef.current?.panTo([venue.lat, venue.lng], { animate: true })
       }
     })
   }, [selectedId, venues])
@@ -133,40 +76,10 @@ export default function StudioMap({ venues, selectedId, onSelectVenue }: Props) 
   return (
     <>
       <style>{`
-        .map-pin {
-          background: white;
-          border: 2px solid #6366f1;
-          border-radius: 8px;
-          padding: 4px 8px;
-          font-size: 11px;
-          font-weight: 600;
-          color: #4f46e5;
-          white-space: nowrap;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-          cursor: pointer;
-          transition: all 0.2s;
-          position: relative;
-        }
-        .map-pin::after {
-          content: '';
-          position: absolute;
-          bottom: -7px;
-          left: 50%;
-          transform: translateX(-50%);
-          border-left: 6px solid transparent;
-          border-right: 6px solid transparent;
-          border-top: 6px solid #6366f1;
-        }
-        .map-pin--selected {
-          background: #6366f1;
-          color: white;
-          border-color: #4f46e5;
-          transform: scale(1.1);
-          z-index: 1000;
-        }
-        .map-pin--selected::after {
-          border-top-color: #4f46e5;
-        }
+        .map-pin { background: white; border: 2px solid #6366f1; border-radius: 8px; padding: 4px 8px; font-size: 11px; font-weight: 600; color: #4f46e5; white-space: nowrap; box-shadow: 0 2px 8px rgba(0,0,0,0.15); cursor: pointer; transition: all 0.2s; position: relative; }
+        .map-pin::after { content: ''; position: absolute; bottom: -7px; left: 50%; transform: translateX(-50%); border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 6px solid #6366f1; }
+        .map-pin--selected { background: #6366f1; color: white; border-color: #4f46e5; transform: scale(1.1); z-index: 1000; }
+        .map-pin--selected::after { border-top-color: #4f46e5; }
       `}</style>
       <div ref={containerRef} className="w-full h-full" />
     </>

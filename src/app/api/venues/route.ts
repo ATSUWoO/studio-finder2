@@ -20,7 +20,6 @@ export async function GET(request: NextRequest) {
       const matchesCity = venue.city?.toLowerCase().includes(q) ?? false
       if (!matchesName && !matchesStation && !matchesCity) continue
     }
-
     const matchingRooms = venue.rooms.filter((room) => {
       if (maxPrice !== null && room.price_per_hour !== null && room.price_per_hour > maxPrice) return false
       if (minCapacity !== null && room.capacity !== null && room.capacity < minCapacity) return false
@@ -28,9 +27,7 @@ export async function GET(request: NextRequest) {
       if (closeHour !== null && room.close_hour !== null && room.close_hour < closeHour) return false
       return true
     })
-
     if (matchingRooms.length === 0) continue
-
     const prices = matchingRooms.map((r) => r.price_per_hour).filter((p): p is number => p !== null)
     results.push({
       ...venue,
@@ -39,6 +36,5 @@ export async function GET(request: NextRequest) {
       maxPrice: prices.length > 0 ? Math.max(...prices) : null,
     })
   }
-
   return NextResponse.json(results)
 }

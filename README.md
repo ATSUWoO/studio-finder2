@@ -12,10 +12,7 @@
 ## ローカルでの起動
 
 ```bash
-# 依存パッケージをインストール
 npm install
-
-# 開発サーバーを起動
 npm run dev
 ```
 
@@ -30,32 +27,6 @@ http://localhost:3000 をブラウザで開いてください。
 | 地図 | Leaflet + CartoDB Voyager tiles |
 | データベース | Supabase (PostgreSQL) |
 | スクレイピング | Playwright / Cheerio |
-
-## プロジェクト構成
-
-```
-src/
-├── app/
-│   ├── page.tsx              # 検索トップページ
-│   ├── api/venues/route.ts   # 検索API
-│   └── venues/[id]/page.tsx  # 店舗詳細ページ
-├── components/
-│   ├── SearchFilters.tsx     # 絞り込みフォーム
-│   ├── StudioList.tsx        # 一覧表示
-│   ├── StudioCard.tsx        # 店舗カード
-│   └── StudioMap.tsx         # 地図コンポーネント
-├── data/demo.ts              # デモデータ（大阪市10店舗）
-├── lib/
-│   ├── types.ts              # 型定義
-│   └── utils.ts              # ユーティリティ関数
-└── scrapers/
-    ├── base.ts               # BaseScraper抽象クラス
-    ├── registry.ts           # スクレイパー一覧
-    ├── runner.ts             # 一括実行スクリプト
-    └── sites/
-        ├── spacemarket.ts    # スペースマーケット用
-        └── instabas.ts       # インスタベース用
-```
 
 ## 環境変数
 

@@ -6,6 +6,5 @@ export function getScrapers(): BaseScraper[] {
   return [
     new SpacemarketScraper(),
     new InstabasScraper(),
-    // 新しいサイトを追加する場合はここにインスタンスを追加するだけ
   ]
 }
