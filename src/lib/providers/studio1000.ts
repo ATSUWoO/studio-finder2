@@ -1,5 +1,5 @@
 import { AvailabilityProvider, ProviderVenue, TimeSlot } from "./types"
-import { findStudioMaster } from "@/lib/studio1000Master"
+import { findStudio1000Venue } from "@/lib/venueMaster"
 
 const BASE_URL = "https://api.m.studio1000.jp/api"
 const CHUNK_SIZE = 20
@@ -57,7 +57,7 @@ function chunk<T>(arr: T[], size: number): T[][] {
 }
 
 function toHHMM(hour: number): string {
-  return `${String(hour).padStart(2, "00")}:00`
+  return `${String(hour).padStart(2, "0")}:00`
 }
 
 export class Studio1000Provider implements AvailabilityProvider {
@@ -108,7 +108,8 @@ export class Studio1000Provider implements AvailabilityProvider {
       if (slots.length === 0) continue
 
       if (!studioMap.has(room.studio.id)) {
-        const master = findStudioMaster(room.studio.id, room.studio.name)
+        const master = findStudio1000Venue(room.studio.id, room.studio.name)
+
         const apiCoords = room.studio.location?.coordinates
         const fixedApiCoords = apiCoords ? fixCoords(apiCoords) : null
         const validApiCoords =
@@ -117,8 +118,8 @@ export class Studio1000Provider implements AvailabilityProvider {
             : null
 
         studioMap.set(room.studio.id, {
-          venueId: String(room.studio.id),
-          venueName: room.studio.name,
+          venueId: master?.venueId ?? String(room.studio.id),
+          venueName: master?.venueName ?? room.studio.name,
           providerId: this.providerId,
           address: master?.address ?? room.studio.address,
           lat: master?.lat ?? validApiCoords?.[0] ?? null,

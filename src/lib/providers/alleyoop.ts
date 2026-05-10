@@ -1,11 +1,17 @@
 import * as cheerio from "cheerio"
 import { Element } from "domhandler"
-import { ALLEYOOP_CAPACITY } from "@/lib/studioMasterData"
+import { getProviderVenues } from "@/lib/venueMaster"
 import { AvailabilityProvider, ProviderVenue, TimeSlot } from "./types"
 
 const BASE_URL = "https://st-alleyoop.com/rental/reserve/"
 const USER_AGENT =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+
+const VENUE = getProviderVenues("alleyoop")[0]
+
+function getCapacity(roomName: string): number | null {
+  return VENUE?.rooms?.find((r) => r.name === roomName)?.capacity ?? null
+}
 
 function isAvailableSlot($: cheerio.CheerioAPI, li: Element): boolean {
   const $li = $(li)
@@ -65,23 +71,23 @@ export class AlleyoopProvider implements AvailabilityProvider {
       rooms.push({
         roomId: roomName,
         roomName,
-        capacity: ALLEYOOP_CAPACITY[roomName] ?? null,
+        capacity: getCapacity(roomName),
         slots,
       })
     })
 
     const roomsWithSlots = rooms.filter((r) => r.slots.length > 0)
-    if (roomsWithSlots.length === 0) return []
+    if (roomsWithSlots.length === 0 || !VENUE) return []
 
     return [
       {
-        venueId: "alleyoop",
-        venueName: "Studio Alleyoop",
+        venueId: VENUE.venueId,
+        venueName: VENUE.venueName,
         providerId: this.providerId,
-        address: "大阪市中央区東心斋橈01-12-20 心斋橈02ダイワビル5F",
-        lat: 34.6739,
-        lng: 135.5009,
-        sourceUrl: "https://st-alleyoop.com/rental/reserve/",
+        address: VENUE.address,
+        lat: VENUE.lat,
+        lng: VENUE.lng,
+        sourceUrl: VENUE.sourceUrl,
         rooms: roomsWithSlots,
       },
     ]
