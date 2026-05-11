@@ -1,5 +1,5 @@
 import { AvailabilityProvider, ProviderVenue, TimeSlot } from "./types"
-import { findStudio1000Venue } from "@/lib/venueMaster"
+import { findStudio1000Venue, isKnownStudio1000Id } from "@/lib/venueMaster"
 
 const BASE_URL = "https://api.m.studio1000.jp/api"
 const CHUNK_SIZE = 20
@@ -47,7 +47,8 @@ function isOsaka(room: S1Room): boolean {
     const fixed = fixCoords(coords)
     if (fixed) return isValidOsakaCoords(fixed[0], fixed[1])
   }
-  return false
+  // 住所・座標で判定できない場合はstudioIdで照合（studioId指定済みのマスターのみマッチ）
+  return isKnownStudio1000Id(room.studio.id)
 }
 
 function chunk<T>(arr: T[], size: number): T[][] {
@@ -124,7 +125,7 @@ export class Studio1000Provider implements AvailabilityProvider {
           address: master?.address ?? room.studio.address,
           lat: master?.lat ?? validApiCoords?.[0] ?? null,
           lng: master?.lng ?? validApiCoords?.[1] ?? null,
-          sourceUrl: `https://m.studio1000.jp/studio/${room.studio.id}`,
+          sourceUrl: master?.sourceUrl ?? `https://m.studio1000.jp/studio/${room.studio.id}`,
           rooms: [],
         })
       }
