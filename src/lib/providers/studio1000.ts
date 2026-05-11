@@ -78,7 +78,7 @@ export class Studio1000Provider implements AvailabilityProvider {
     const timeEnd = `${date}T23:59:59.000+09:00`
 
     const chunks = chunk(osakaRooms, CHUNK_SIZE)
-    const slotResults = await Promise.all(
+    const chunkResults = await Promise.allSettled(
       chunks.map(async (rooms) => {
         const params = new URLSearchParams({ timeStart, timeEnd })
         rooms.forEach((r) => params.append("roomIds", String(r.id)))
@@ -87,7 +87,9 @@ export class Studio1000Provider implements AvailabilityProvider {
         return res.json() as Promise<S1Slot[]>
       })
     )
-    const allSlots: S1Slot[] = slotResults.flat()
+    const allSlots: S1Slot[] = chunkResults
+      .filter((r): r is PromiseFulfilledResult<S1Slot[]> => r.status === "fulfilled")
+      .flatMap((r) => r.value)
 
     const slotsByRoom = new Map<string, TimeSlot[]>()
     for (const slot of allSlots) {
