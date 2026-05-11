@@ -145,12 +145,13 @@ export function getProviderVenues(providerId: string): VenueMaster[] {
 }
 
 /** Studio1000: studioId完全一致 → nameKeywords部分一致 の順で照合 */
-export function findStudio1000Venue(studioId: number, studioName: string): VenueMaster | undefined {
+export function findStudio1000Venue(studioId: number, studioName: string | null | undefined): VenueMaster | undefined {
   const byId = VENUE_MASTER.find(
     (v) => v.providerId === "studio1000" && v.studioId === studioId
   )
   if (byId) return byId
 
+  if (!studioName) return undefined
   const nameLower = studioName.toLowerCase()
   return VENUE_MASTER.find(
     (v) =>
