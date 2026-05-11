@@ -47,8 +47,7 @@ function isOsaka(room: S1Room): boolean {
     const fixed = fixCoords(coords)
     if (fixed) return isValidOsakaCoords(fixed[0], fixed[1])
   }
-  // アドレス・座標で判定できない場合はマスターデータとの照合にフォールバック
-  return findStudio1000Venue(room.studio.id, room.studio.name) !== undefined
+  return false
 }
 
 function chunk<T>(arr: T[], size: number): T[][] {
@@ -111,7 +110,6 @@ export class Studio1000Provider implements AvailabilityProvider {
       if (!studioMap.has(room.studio.id)) {
         const master = findStudio1000Venue(room.studio.id, room.studio.name)
 
-        // マスターにない場合はAPIの座標を検証して使用
         const apiCoords = room.studio.location?.coordinates
         const fixedApiCoords = apiCoords ? fixCoords(apiCoords) : null
         const validApiCoords =
