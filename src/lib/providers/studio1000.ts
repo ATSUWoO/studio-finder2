@@ -47,7 +47,8 @@ function isOsaka(room: S1Room): boolean {
     const fixed = fixCoords(coords)
     if (fixed) return isValidOsakaCoords(fixed[0], fixed[1])
   }
-  return false
+  // アドレス・座標で判定できない場合はマスターデータとの照合にフォールバック
+  return findStudio1000Venue(room.studio.id, room.studio.name) !== undefined
 }
 
 function chunk<T>(arr: T[], size: number): T[][] {
