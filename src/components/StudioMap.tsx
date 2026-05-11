@@ -84,8 +84,8 @@ export default function StudioMap({ venues, selectedId, onSelectVenue }: Props) 
             html: `<div class="map-pin ${isSelected ? "map-pin--selected" : ""}">
               <span>${venue.name}</span>
             </div>`,
-            iconSize: [1, 1],
-            iconAnchor: [0, 1],
+            iconSize: [0, 0],
+            iconAnchor: [0, 0],
           })
 
           const marker = L.marker([venue.lat, venue.lng], { icon })
@@ -115,8 +115,8 @@ export default function StudioMap({ venues, selectedId, onSelectVenue }: Props) 
           L.divIcon({
             className: "map-pin-wrapper",
             html,
-            iconSize: [1, 1],
-            iconAnchor: [0, 1],
+            iconSize: [0, 0],
+            iconAnchor: [0, 0],
           })
         )
       }
@@ -133,7 +133,14 @@ export default function StudioMap({ venues, selectedId, onSelectVenue }: Props) 
   return (
     <>
       <style>{`
+        .map-pin-wrapper {
+          overflow: visible !important;
+        }
         .map-pin {
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          transform: translateX(-50%);
           background: white;
           border: 2px solid #6366f1;
           border-radius: 8px;
@@ -145,7 +152,6 @@ export default function StudioMap({ venues, selectedId, onSelectVenue }: Props) 
           box-shadow: 0 2px 8px rgba(0,0,0,0.15);
           cursor: pointer;
           transition: all 0.2s;
-          position: relative;
         }
         .map-pin::after {
           content: '';
@@ -161,14 +167,11 @@ export default function StudioMap({ venues, selectedId, onSelectVenue }: Props) 
           background: #6366f1;
           color: white;
           border-color: #4f46e5;
-          transform: scale(1.1);
+          transform: translateX(-50%) scale(1.1);
           z-index: 1000;
         }
         .map-pin--selected::after {
           border-top-color: #4f46e5;
-        }
-        .map-pin-wrapper {
-          overflow: visible !important;
         }
       `}</style>
       <div ref={containerRef} className="w-full h-full" />
