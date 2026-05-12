@@ -35,7 +35,7 @@ function tomorrowString() {
   return d.toISOString().split("T")[0]
 }
 function nowOpenHour() {
-  return Math.min(23, new Date().getHours() + 1)
+  return Math.max(7, Math.min(23, new Date().getHours() + 1))
 }
 
 type QuickPreset = {
