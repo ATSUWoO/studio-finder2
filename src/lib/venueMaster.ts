@@ -172,6 +172,17 @@ export const VENUE_MASTER: VenueMaster[] = [
     lng: 135.5342135,
     sourceUrl: "https://m.studio1000.jp/studio/25",
   },
+  {
+    providerId: "studio1000",
+    studioId: 29,
+    venueId: "studio1000-greenland",
+    venueName: "Studio1000 GREEN LAND",
+    nameKeywords: ["GREEN LAND", "Greenland", "Patagonia", "Stanley"],
+    address: "大阪府大阪市北区兎我野町4-9",
+    lat: 34.7008,
+    lng: 135.5044,
+    sourceUrl: "https://m.studio1000.jp/studio/29",
+  },
 ]
 
 // ────────────────────────────────────────────
