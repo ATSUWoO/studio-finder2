@@ -55,3 +55,92 @@
 **完了条件**
 - PC: カードクリックで地図がスムーズに該当エリアへ
 - モバイル: ピンクリックで自動的にカード位置までジャンプ
+
+---
+
+## ④ 「いま空いてる」クイックフィルタ
+
+**目的**：頻出ユースケース「今から練習したい」「今夜空きある？」をワンタップで。
+
+**やること**
+- [ ] `SearchFilters.tsx` 上部に横並びチップを追加：「今すぐ」「今夜(18-23)」「明日朝(7-12)」
+- [ ] 「今すぐ」：date=今日、openHour=現在時刻の hour（切り上げ）、closeHour=null
+- [ ] 「今夜」：date=今日、openHour=18、closeHour=23
+- [ ] 「明日朝」：date=明日、openHour=7、closeHour=12
+- [ ] アクティブ判定（現在の filter 値とチップの想定値が一致するかでハイライト）
+
+**完了条件**
+- チップタップで date と時間が一括更新され結果が即反映
+- 別チップタップで切り替え、再タップで解除できる
+
+---
+
+## ⑤ 連続コマ検索（2h / 3h / オールナイト）
+
+**目的**：単発1時間ではなく「2時間以上連続して空いている枠」を見たい（ダンサーの典型ニーズ）。
+
+**やること**
+- [ ] `SearchFilters` 型に `minDurationHours: number | null` を追加
+- [ ] UI：プルダウン「コマ ▼ / 2h連続 / 3h連続 / オールナイトのみ」
+- [ ] API（`route.ts`）で同一 room の slot を `start` でソートし、隣接判定（`prev.end === next.start`）で連結
+- [ ] 連結後の合計時間 ≥ `minDurationHours` のグループだけ通す
+- [ ] 「オールナイトのみ」：`slot.isAllnight === true` だけ通す
+
+**完了条件**
+- 「2h連続」選択時、単発1時間しか空いてない部屋は結果から消える
+- 「3h連続」は2hの結果からさらに絞られる
+- 「オールナイトのみ」は深夜帯のみ表示
+
+---
+
+## ⑥ エリアフィルタ（梅田/難波/心斎橋等）
+
+**目的**：エリア指定をワンタップで（住所文字列検索より早い）。
+
+**やること**
+- [ ] `src/lib/areas.ts`（新）にエリア定義：梅田/難波/心斎橋/天王寺/京橋/本町/福島/天満（中心 lat/lng + 半径 km）
+- [ ] `SearchFilters` 型に `areaId: string | null` を追加
+- [ ] UI：地名チップ（Task② ピル UI を流用、横スクロール可）
+- [ ] API：選択エリア中心からの半径内 venue だけ通す（haversine 近似で OK）
+- [ ] lat/lng null の venue は address の地名キーワードで補完判定
+
+**完了条件**
+- 「梅田」チップで梅田駅周辺 ~1.5km の venue だけ残る
+- 他エリアも同様に動作
+- チップ再タップで解除（areaId=null）
+
+---
+
+## ⑦ 並び替え + URL クエリ同期 + お気に入り
+
+**目的**：結果を整理・共有・再訪可能に。
+
+**やること**
+- [ ] **並び替え**：`sortBy: "default" | "priceAsc" | "slotsDesc" | "nameAsc"` を追加。クライアント側ソート
+- [ ] **URL クエリ同期**：`useSearchParams` + `router.replace` で filters ⇔ query string の双方向同期
+- [ ] **お気に入り**：`useFavorites` フック（localStorage `studio-finder.favorites`）。カードに ★ アイコン
+- [ ] 「★ のみ表示」トグルをフィルタ列に追加
+
+**完了条件**
+- 並び替えセレクタで結果順が変わる
+- URL にフィルタが反映され、戻るボタン / シェアが機能
+- 星トグル ON でお気に入り店舗のみ表示
+
+---
+
+## ⑧ プロバイダ追加の半自動化
+
+**目的**：新プロバイダ追加時の触る箇所と手順を最小化する。
+
+**やること**
+- [ ] **構造整理**：`src/lib/providers/registry.ts`（新）に `PROVIDER_LABELS` を集約し、`AvailabilityCard.tsx` / `page.tsx` の重複を import に置換
+- [ ] 共通ユーティリティを `src/lib/providers/_utils.ts` に抽出（`parseHHmm`, `isOsakaAddress`, master マージ等）
+- [ ] **scaffold スクリプト**：`scripts/new-provider.ts` + `package.json` に `"new-provider"` を追加
+  - 使い方：`npm run new-provider mycompany "My Company"`
+  - 生成：`providers/mycompany.ts`、`index.ts` への登録挿入、`registry.ts` のラベル追加
+- [ ] **ドキュメント**：`docs/ADD_PROVIDER.md`（新）に手順・テンプレの埋め方・落とし穴（null guard, Osaka filter, allSettled）を記載
+
+**完了条件**
+- `npm run new-provider foo "Foo Studio"` で関連ファイルが自動生成・登録される
+- 生成直後の dev server で `foo` プロバイダがエラーなく no-op として動く
+- `docs/ADD_PROVIDER.md` を読むだけで新プロバイダを追加できる
