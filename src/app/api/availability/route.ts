@@ -1,17 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { fetchAllAvailability } from "@/lib/providers"
-import { ProviderVenue, TimeSlot } from "@/lib/providers/types"
-
-function matchesTimeFilter(slots: TimeSlot[], openHour: number | null, closeHour: number | null): boolean {
-  if (openHour === null && closeHour === null) return true
-  return slots.some((slot) => {
-    const [startH] = slot.start.split(":").map(Number)
-    const [endH] = slot.end.split(":").map(Number)
-    if (openHour !== null && startH < openHour) return false
-    if (closeHour !== null && endH > closeHour) return false
-    return true
-  })
-}
+import { ProviderVenue } from "@/lib/providers/types"
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
@@ -41,7 +30,15 @@ export async function GET(request: NextRequest) {
         if (maxPrice !== null) {
           slots = slots.filter((s) => s.price === null || s.price <= maxPrice)
         }
-        if (!matchesTimeFilter(slots, openHour, closeHour)) return null
+        if (openHour !== null || closeHour !== null) {
+          slots = slots.filter((slot) => {
+            const [startH] = slot.start.split(":").map(Number)
+            const [endH] = slot.end.split(":").map(Number)
+            if (openHour !== null && startH < openHour) return false
+            if (closeHour !== null && endH > closeHour) return false
+            return true
+          })
+        }
         if (minCapacity !== null && room.capacity !== null && room.capacity < minCapacity) return null
 
         return slots.length > 0 ? { ...room, slots } : null
