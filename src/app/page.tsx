@@ -23,6 +23,7 @@ const DEFAULT_FILTERS: SearchFilters = {
   openHour: null,
   closeHour: null,
   date: TODAY,
+  durationFilter: null,
 }
 
 interface RoomCard {
@@ -144,6 +145,7 @@ export default function HomePage() {
     if (f.minCapacity !== null) params.set("minCapacity", String(f.minCapacity))
     if (f.openHour !== null) params.set("openHour", String(f.openHour))
     if (f.closeHour !== null) params.set("closeHour", String(f.closeHour))
+    if (f.durationFilter) params.set("durationFilter", f.durationFilter)
 
     try {
       const res = await fetch(`/api/availability?${params}`)

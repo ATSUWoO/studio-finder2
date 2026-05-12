@@ -1,6 +1,6 @@
 "use client"
 
-import { SearchFilters } from "@/lib/types"
+import { SearchFilters, DurationFilter } from "@/lib/types"
 import { formatHour, formatPrice } from "@/lib/utils"
 
 interface Props {
@@ -55,10 +55,10 @@ export default function SearchFiltersComponent({ filters, onChange, resultCount 
 
   const hasActiveFilters =
     filters.query || filters.maxPrice !== null || filters.minCapacity !== null ||
-    filters.openHour !== null || filters.closeHour !== null
+    filters.openHour !== null || filters.closeHour !== null || filters.durationFilter !== null
 
   const clearFilters = () =>
-    onChange({ query: "", maxPrice: null, minCapacity: null, openHour: null, closeHour: null, date: filters.date })
+    onChange({ query: "", maxPrice: null, minCapacity: null, openHour: null, closeHour: null, date: filters.date, durationFilter: null })
 
   const activePresetId = ((): QuickPreset["id"] | null => {
     for (const p of QUICK_PRESETS) {
@@ -146,6 +146,17 @@ export default function SearchFiltersComponent({ filters, onChange, resultCount 
           {CAPACITY_OPTIONS.map((opt) => (
             <option key={opt.value} value={opt.value}>{opt.label}</option>
           ))}
+        </select>
+
+        <select
+          value={filters.durationFilter ?? ""}
+          onChange={(e) => set({ durationFilter: (e.target.value || null) as DurationFilter })}
+          className="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+        >
+          <option value="">コマ ▼</option>
+          <option value="2h">2h連続</option>
+          <option value="3h">3h連続</option>
+          <option value="allnight">オールナイトのみ</option>
         </select>
 
         <div className="flex items-center gap-1 text-sm">

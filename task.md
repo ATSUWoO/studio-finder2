@@ -75,16 +75,16 @@
 
 ---
 
-## ⑤ 連続コマ検索（2h / 3h / オールナイト）
+## ⑤ 連続コマ検索（2h / 3h / オールナイト）✅
 
 **目的**：単発1時間ではなく「2時間以上連続して空いている枠」を見たい（ダンサーの典型ニーズ）。
 
 **やること**
-- [ ] `SearchFilters` 型に `minDurationHours: number | null` を追加
-- [ ] UI：プルダウン「コマ ▼ / 2h連続 / 3h連続 / オールナイトのみ」
-- [ ] API（`route.ts`）で同一 room の slot を `start` でソートし、隣接判定（`prev.end === next.start`）で連結
-- [ ] 連結後の合計時間 ≥ `minDurationHours` のグループだけ通す
-- [ ] 「オールナイトのみ」：`slot.isAllnight === true` だけ通す
+- [x] `SearchFilters` 型に `durationFilter: "2h" | "3h" | "allnight" | null` を追加
+- [x] UI：プルダウン「コマ ▼ / 2h連続 / 3h連続 / オールナイトのみ」
+- [x] API（`route.ts`）で同一 room の slot を `start` でソートし、隣接判定（`prev.end === next.start`）で連結
+- [x] 連結後の合計時間 ≥ `minDurationHours` のグループだけ通す
+- [x] 「オールナイトのみ」：`slot.isAllnight === true` だけ通す
 
 **完了条件**
 - 「2h連続」選択時、単発1時間しか空いてない部屋は結果から消える
