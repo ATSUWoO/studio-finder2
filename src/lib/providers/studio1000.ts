@@ -48,7 +48,7 @@ function isOsaka(room: S1Room): boolean {
     if (fixed) return isValidOsakaCoords(fixed[0], fixed[1])
   }
   // 住所・座標で判定できない場合はstudioIdで照合（studioId指定済みのマスターのみマッチ）
-  return isKnownStudio1000Id(room.studio.id)
+  return isKnownStudio1000Id(room.studio?.id ?? -1)
 }
 
 function chunk<T>(arr: T[], size: number): T[][] {
