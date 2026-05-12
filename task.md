@@ -58,16 +58,16 @@
 
 ---
 
-## ④ 「いま空いてる」クイックフィルタ
+## ④ 「いま空いてる」クイックフィルタ ✅
 
 **目的**：頻出ユースケース「今から練習したい」「今夜空きある？」をワンタップで。
 
 **やること**
-- [ ] `SearchFilters.tsx` 上部に横並びチップを追加：「今すぐ」「今夜(18-23)」「明日朝(7-12)」
-- [ ] 「今すぐ」：date=今日、openHour=現在時刻の hour（切り上げ）、closeHour=null
-- [ ] 「今夜」：date=今日、openHour=18、closeHour=23
-- [ ] 「明日朝」：date=明日、openHour=7、closeHour=12
-- [ ] アクティブ判定（現在の filter 値とチップの想定値が一致するかでハイライト）
+- [x] `SearchFilters.tsx` 上部に横並びチップを追加：「今すぐ」「今夜(18-23)」「明日朝(7-12)」
+- [x] 「今すぐ」：date=今日、openHour=現在時刻の hour（切り上げ）、closeHour=null
+- [x] 「今夜」：date=今日、openHour=18、closeHour=23
+- [x] 「明日朝」：date=明日、openHour=7、closeHour=12
+- [x] アクティブ判定（現在の filter 値とチップの想定値が一致するかでハイライト）
 
 **完了条件**
 - チップタップで date と時間が一括更新され結果が即反映
