@@ -218,12 +218,17 @@ export default function StudioMap({ venues, selectedId, onSelectVenue, onDeselec
           border-right: 6px solid transparent;
           border-top: 6px solid #6366f1;
         }
+        @keyframes map-pin-pulse {
+          0%, 100% { box-shadow: 0 2px 8px rgba(0,0,0,0.15), 0 0 0 0 rgba(99,102,241,0.5); }
+          60% { box-shadow: 0 2px 8px rgba(0,0,0,0.15), 0 0 0 10px rgba(99,102,241,0); }
+        }
         .map-pin--selected {
           background: #6366f1;
           color: white;
           border-color: #4f46e5;
           transform: translateX(-50%) scale(1.1);
           z-index: 1000;
+          animation: map-pin-pulse 1.6s ease-out infinite;
         }
         .map-pin--selected::after {
           border-top-color: #4f46e5;

@@ -36,7 +36,7 @@ const PROVIDER_LABELS: Record<string, string> = {
   studio1000: "Studio1000",
 }
 
-function MapBottomSheet({ venue, onClose }: { venue: ProviderVenue; onClose: () => void }) {
+function MapBottomSheet({ venue, onClose, onViewInList }: { venue: ProviderVenue; onClose: () => void; onViewInList: () => void }) {
   const prices = venue.rooms.flatMap((r) => r.slots.map((s) => s.price).filter((p): p is number => p !== null))
   const minPrice = prices.length > 0 ? Math.min(...prices) : null
   const maxPrice = prices.length > 0 ? Math.max(...prices) : null
@@ -80,16 +80,24 @@ function MapBottomSheet({ venue, onClose }: { venue: ProviderVenue; onClose: () 
             <span className="text-gray-400 text-sm">料金未定</span>
           )}
         </div>
-        {venue.sourceUrl && (
-          <a
-            href={venue.sourceUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-sm bg-indigo-600 text-white font-semibold px-4 py-2 rounded-full hover:bg-indigo-700 transition-colors"
+        <div className="flex items-center gap-2">
+          <button
+            onClick={onViewInList}
+            className="text-sm text-indigo-600 font-semibold px-3 py-2 rounded-full border border-indigo-200 hover:bg-indigo-50 transition-colors"
           >
-            予約サイトへ →
-          </a>
-        )}
+            一覧で見る
+          </button>
+          {venue.sourceUrl && (
+            <a
+              href={venue.sourceUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm bg-indigo-600 text-white font-semibold px-4 py-2 rounded-full hover:bg-indigo-700 transition-colors"
+            >
+              予約サイトへ →
+            </a>
+          )}
+        </div>
       </div>
     </div>
   )
@@ -273,6 +281,17 @@ export default function HomePage() {
             <MapBottomSheet
               venue={selectedVenue}
               onClose={() => setSelectedVenueId(null)}
+              onViewInList={() => {
+                setActiveTab("list")
+                setTimeout(() => {
+                  const firstCard = roomCards.find((rc) => rc.venue.venueId === selectedVenue.venueId)
+                  if (firstCard) {
+                    const room = firstCard.venue.rooms[firstCard.roomIndex]
+                    document.getElementById(`venue-card-${firstCard.venue.venueId}-${room.roomId}`)
+                      ?.scrollIntoView({ behavior: "smooth", block: "nearest" })
+                  }
+                }, 50)
+              }}
             />
           )}
         </div>
