@@ -1,7 +1,6 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import "leaflet/dist/leaflet.css"
 import "leaflet.markercluster/dist/MarkerCluster.css"
 import "leaflet.markercluster/dist/MarkerCluster.Default.css"
 
@@ -39,7 +38,14 @@ export default function StudioMap({ venues, selectedId, onSelectVenue }: Props) 
     if (!containerRef.current) return
     if (mapRef.current) return
 
-    Promise.all([import("leaflet"), import("leaflet.markercluster")]).then(([L]) => {
+    ;(async () => {
+      const L = await import("leaflet")
+      // markercluster requires window.L to be set before it loads, otherwise
+      // it may attach to a different leaflet instance via require resolution
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ;(window as any).L = L
+      await import("leaflet.markercluster")
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       delete (L.Icon.Default.prototype as any)._getIconUrl
       L.Icon.Default.mergeOptions({
@@ -79,6 +85,8 @@ export default function StudioMap({ venues, selectedId, onSelectVenue }: Props) 
       mapRef.current = map
       clusterRef.current = cluster
       setMapReady(true)
+    })().catch((err) => {
+      console.error("[StudioMap] init failed:", err)
     })
 
     return () => {
