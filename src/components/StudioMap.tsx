@@ -40,11 +40,15 @@ export default function StudioMap({ venues, selectedId, onSelectVenue }: Props) 
 
     ;(async () => {
       const L = await import("leaflet")
-      // markercluster requires window.L to be set before it loads, otherwise
-      // it may attach to a different leaflet instance via require resolution
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ;(window as any).L = L
+      // Leaflet の UMD 末尾が window.L = module.exports を設定する。
+      // ここで上書きすると markercluster が可変な module.exports ではなく
+      // ESM namespace を掴んでしまい markerClusterGroup の追加が無効になるため削除。
       await import("leaflet.markercluster")
+
+      // markerClusterGroup は window.L (= module.exports) に追加されている。
+      // ESM namespace の L にはないため window.L 経由で取得する。
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const Lmc = (window as any).L as typeof L & { markerClusterGroup: (opts?: object) => import("leaflet").MarkerClusterGroup }
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       delete (L.Icon.Default.prototype as any)._getIconUrl
@@ -65,13 +69,13 @@ export default function StudioMap({ venues, selectedId, onSelectVenue }: Props) 
         maxZoom: 19,
       }).addTo(map)
 
-      const cluster = L.markerClusterGroup({
+      const cluster = Lmc.markerClusterGroup({
         showCoverageOnHover: false,
         spiderfyOnMaxZoom: true,
         zoomToBoundsOnClick: true,
         disableClusteringAtZoom: DISABLE_CLUSTERING_AT_ZOOM,
         maxClusterRadius: 40,
-        iconCreateFunction: (c) => {
+        iconCreateFunction: (c: import("leaflet").MarkerCluster) => {
           const count = c.getChildCount()
           return L.divIcon({
             html: `<div class="map-cluster"><span>${count}</span></div>`,

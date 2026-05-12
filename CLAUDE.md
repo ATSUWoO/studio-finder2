@@ -17,6 +17,6 @@
 - **対策**: `mapReady` という useState フラグを導入し、マップ初期化完了時にセット。マーカー追加・選択 effect の deps に含めて、マップ準備完了後に再実行されるようにする。
 
 ### Next.js + leaflet プラグイン（leaflet.markercluster 等）で地図自体が消える
-- **原因**: webpack の dynamic import で `leaflet.markercluster` が `require('leaflet')` する際、ESM dynamic import で取得した leaflet とは別インスタンスを掴むことがあり、`L.markerClusterGroup` が undefined のまま。プラグインを呼び出すと例外でマップ生成が止まる。
-- **対策**: leaflet を import した直後に `(window as any).L = L` でグローバルを先にセットしてからプラグインを動的 import する。Promise/async 内の例外は `.catch(console.error)` で必ずサーフェスし、コンソールから原因を切り分けられるようにする。
+- **原因**: Leaflet の UMD 末尾は `window.L = exports`（可変な `module.exports`）を自ら設定する。`(window as any).L = L` で ESM namespace（webpack が作る別オブジェクト）に上書きすると、markercluster factory が `window.L` に `markerClusterGroup` を追加しようとしても namespace への追加が無効になり、`L.markerClusterGroup` が undefined → 例外 → マップ初期化失敗。
+- **対策**: `window.L` を上書きしない（Leaflet が設定した `module.exports` のまま維持）。プラグイン import 後は `(window as any).L.markerClusterGroup(...)` で呼ぶ。async IIFE の例外は必ず `.catch(console.error)` でサーフェスする。
 
