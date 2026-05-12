@@ -8,6 +8,8 @@ interface Props {
   room: ProviderRoom
   isSelected: boolean
   onSelect: () => void
+  isFavorite?: boolean
+  onToggleFavorite?: () => void
 }
 
 const PROVIDER_LABELS: Record<string, string> = {
@@ -16,7 +18,7 @@ const PROVIDER_LABELS: Record<string, string> = {
   studio1000: "Studio1000",
 }
 
-export default function AvailabilityCard({ venue, room, isSelected, onSelect }: Props) {
+export default function AvailabilityCard({ venue, room, isSelected, onSelect, isFavorite, onToggleFavorite }: Props) {
   const prices = room.slots.map((s) => s.price).filter((p): p is number => p !== null)
   const minPrice = prices.length > 0 ? Math.min(...prices) : null
   const maxPrice = prices.length > 0 ? Math.max(...prices) : null
@@ -37,7 +39,22 @@ export default function AvailabilityCard({ venue, room, isSelected, onSelect }: 
           <span className="text-xs bg-emerald-50 text-emerald-600 rounded px-1.5 py-0.5 font-medium">
             {PROVIDER_LABELS[venue.providerId] ?? venue.providerId}
           </span>
-          <span className="text-xs text-gray-400 truncate">{venue.venueName}</span>
+          <span className="text-xs text-gray-400 truncate flex-1">{venue.venueName}</span>
+          {onToggleFavorite && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onToggleFavorite() }}
+              aria-label={isFavorite ? "お気に入り解除" : "お気に入りに追加"}
+              className={cn(
+                "shrink-0 -my-1 -mr-1 p-1 rounded transition-colors",
+                isFavorite ? "text-yellow-400 hover:text-yellow-500" : "text-gray-300 hover:text-yellow-400"
+              )}
+            >
+              <svg className="w-4 h-4" fill={isFavorite ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                  d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.196-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.783-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+              </svg>
+            </button>
+          )}
         </div>
 
         <h3 className="font-semibold text-gray-900 text-sm leading-snug mb-1">

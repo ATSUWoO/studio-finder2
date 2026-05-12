@@ -1,6 +1,6 @@
 "use client"
 
-import { SearchFilters, DurationFilter } from "@/lib/types"
+import { SearchFilters, DurationFilter, SortBy } from "@/lib/types"
 import { formatHour, formatPrice } from "@/lib/utils"
 import { AREAS } from "@/lib/areas"
 
@@ -57,10 +57,14 @@ export default function SearchFiltersComponent({ filters, onChange, resultCount 
   const hasActiveFilters =
     filters.query || filters.maxPrice !== null || filters.minCapacity !== null ||
     filters.openHour !== null || filters.closeHour !== null || filters.durationFilter !== null ||
-    filters.areaId !== null
+    filters.areaId !== null || filters.sortBy !== "default" || filters.favoritesOnly
 
   const clearFilters = () =>
-    onChange({ query: "", maxPrice: null, minCapacity: null, openHour: null, closeHour: null, date: filters.date, durationFilter: null, areaId: null })
+    onChange({
+      query: "", maxPrice: null, minCapacity: null, openHour: null, closeHour: null,
+      date: filters.date, durationFilter: null, areaId: null,
+      sortBy: "default", favoritesOnly: false,
+    })
 
   const activePresetId = ((): QuickPreset["id"] | null => {
     for (const p of QUICK_PRESETS) {
@@ -179,6 +183,29 @@ export default function SearchFiltersComponent({ filters, onChange, resultCount 
           <option value="3h">3h連続</option>
           <option value="allnight">オールナイトのみ</option>
         </select>
+
+        <select
+          value={filters.sortBy}
+          onChange={(e) => set({ sortBy: e.target.value as SortBy })}
+          className="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+        >
+          <option value="default">並び替え ▼</option>
+          <option value="priceAsc">安い順</option>
+          <option value="slotsDesc">空きが多い順</option>
+          <option value="nameAsc">名前順</option>
+        </select>
+
+        <button
+          onClick={() => set({ favoritesOnly: !filters.favoritesOnly })}
+          aria-pressed={filters.favoritesOnly}
+          className={`text-sm rounded-lg px-3 py-2 border transition-colors ${
+            filters.favoritesOnly
+              ? "bg-yellow-50 border-yellow-300 text-yellow-700"
+              : "bg-white border-gray-300 text-gray-700 hover:border-yellow-300"
+          }`}
+        >
+          ★ お気に入り
+        </button>
 
         <div className="flex items-center gap-1 text-sm">
           <select

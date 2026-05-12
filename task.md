@@ -111,15 +111,15 @@
 
 ---
 
-## ⑦ 並び替え + URL クエリ同期 + お気に入り
+## ⑦ 並び替え + URL クエリ同期 + お気に入り ✅
 
 **目的**：結果を整理・共有・再訪可能に。
 
 **やること**
-- [ ] **並び替え**：`sortBy: "default" | "priceAsc" | "slotsDesc" | "nameAsc"` を追加。クライアント側ソート
-- [ ] **URL クエリ同期**：`useSearchParams` + `router.replace` で filters ⇔ query string の双方向同期
-- [ ] **お気に入り**：`useFavorites` フック（localStorage `studio-finder.favorites`）。カードに ★ アイコン
-- [ ] 「★ のみ表示」トグルをフィルタ列に追加
+- [x] **並び替え**：`sortBy: "default" | "priceAsc" | "slotsDesc" | "nameAsc"` を追加。クライアント側ソート
+- [x] **URL クエリ同期**：`useSearchParams` + `router.replace` で filters ⇔ query string の双方向同期
+- [x] **お気に入り**：`useFavorites` フック（localStorage `studio-finder.favorites`）。カードに ★ アイコン
+- [x] 「★ のみ表示」トグルをフィルタ列に追加
 
 **完了条件**
 - 並び替えセレクタで結果順が変わる

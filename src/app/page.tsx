@@ -1,35 +1,33 @@
 "use client"
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import dynamic from "next/dynamic"
+import { useSearchParams, useRouter, usePathname } from "next/navigation"
 import { SearchFilters } from "@/lib/types"
 import { ProviderVenue } from "@/lib/providers/types"
 import { MapVenuePin } from "@/components/StudioMap"
 import SearchFiltersComponent from "@/components/SearchFilters"
 import AvailabilityCard from "@/components/AvailabilityCard"
 import { formatPrice } from "@/lib/utils"
+import { useFavorites } from "@/hooks/useFavorites"
+import { filtersFromParams, filtersToParams } from "@/lib/filterUrl"
 
 const StudioMap = dynamic(() => import("@/components/StudioMap"), {
   ssr: false,
   loading: () => <div className="w-full h-full bg-gray-100 animate-pulse" />,
 })
 
-const TODAY = new Date().toISOString().split("T")[0]
-
-const DEFAULT_FILTERS: SearchFilters = {
-  query: "",
-  maxPrice: null,
-  minCapacity: null,
-  openHour: null,
-  closeHour: null,
-  date: TODAY,
-  durationFilter: null,
-  areaId: null,
-}
-
 interface RoomCard {
   venue: ProviderVenue
   roomIndex: number
+}
+
+function minVenuePrice(v: ProviderVenue): number | null {
+  const prices = v.rooms.flatMap((r) => r.slots.map((s) => s.price).filter((p): p is number => p !== null))
+  return prices.length > 0 ? Math.min(...prices) : null
+}
+function totalSlots(v: ProviderVenue): number {
+  return v.rooms.reduce((sum, r) => sum + r.slots.length, 0)
 }
 
 const PROVIDER_LABELS: Record<string, string> = {
@@ -123,7 +121,20 @@ function SkeletonCard() {
 }
 
 export default function HomePage() {
-  const [filters, setFilters] = useState<SearchFilters>(DEFAULT_FILTERS)
+  return (
+    <Suspense fallback={<div className="h-screen bg-gray-50" />}>
+      <HomePageInner />
+    </Suspense>
+  )
+}
+
+function HomePageInner() {
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const pathname = usePathname()
+  const { has: isFavorite, toggle: toggleFavorite, loaded: favoritesLoaded } = useFavorites()
+
+  const [filters, setFilters] = useState<SearchFilters>(() => filtersFromParams(searchParams))
   const [venues, setVenues] = useState<ProviderVenue[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedVenueId, setSelectedVenueId] = useState<string | null>(null)
@@ -137,6 +148,11 @@ export default function HomePage() {
     window.addEventListener("keydown", onKeyDown)
     return () => window.removeEventListener("keydown", onKeyDown)
   }, [])
+
+  useEffect(() => {
+    const qs = filtersToParams(filters).toString()
+    router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
+  }, [filters, pathname, router])
 
   const fetchVenues = useCallback(async (f: SearchFilters) => {
     setLoading(true)
@@ -166,7 +182,20 @@ export default function HomePage() {
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current) }
   }, [filters, fetchVenues])
 
-  const roomCards: RoomCard[] = venues.flatMap((venue) =>
+  const visibleVenues = useMemo(() => {
+    const filtered = filters.favoritesOnly ? venues.filter((v) => isFavorite(v.venueId)) : venues
+    const sorted = [...filtered]
+    if (filters.sortBy === "priceAsc") {
+      sorted.sort((a, b) => (minVenuePrice(a) ?? Infinity) - (minVenuePrice(b) ?? Infinity))
+    } else if (filters.sortBy === "slotsDesc") {
+      sorted.sort((a, b) => totalSlots(b) - totalSlots(a))
+    } else if (filters.sortBy === "nameAsc") {
+      sorted.sort((a, b) => a.venueName.localeCompare(b.venueName, "ja"))
+    }
+    return sorted
+  }, [venues, filters.favoritesOnly, filters.sortBy, isFavorite])
+
+  const roomCards: RoomCard[] = visibleVenues.flatMap((venue) =>
     venue.rooms.map((_, roomIndex) => ({ venue, roomIndex }))
   )
 
@@ -181,11 +210,11 @@ export default function HomePage() {
   }, [])
 
   const selectedVenue = useMemo(
-    () => venues.find((v) => v.venueId === selectedVenueId) ?? null,
-    [venues, selectedVenueId]
+    () => visibleVenues.find((v) => v.venueId === selectedVenueId) ?? null,
+    [visibleVenues, selectedVenueId]
   )
 
-  const mapVenues: MapVenuePin[] = venues
+  const mapVenues: MapVenuePin[] = visibleVenues
     .filter((v) => v.lat !== null && v.lng !== null)
     .map((v) => ({ id: v.venueId, name: v.venueName, lat: v.lat, lng: v.lng }))
 
@@ -261,6 +290,8 @@ export default function HomePage() {
                     room={room}
                     isSelected={selectedVenueId === venue.venueId}
                     onSelect={() => handleSelectVenue(venue.venueId, cardId)}
+                    isFavorite={favoritesLoaded && isFavorite(venue.venueId)}
+                    onToggleFavorite={() => toggleFavorite(venue.venueId)}
                   />
                 )
               })
