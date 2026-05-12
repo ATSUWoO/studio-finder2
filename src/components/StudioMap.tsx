@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 import "leaflet/dist/leaflet.css"
 import "leaflet.markercluster/dist/MarkerCluster.css"
 import "leaflet.markercluster/dist/MarkerCluster.Default.css"
@@ -32,6 +32,7 @@ export default function StudioMap({ venues, selectedId, onSelectVenue }: Props) 
   const clusterRef = useRef<LMarkerClusterGroup | null>(null)
   const markersRef = useRef<Map<string, LMarker>>(new Map())
   const containerRef = useRef<HTMLDivElement>(null)
+  const [mapReady, setMapReady] = useState(false)
 
   useEffect(() => {
     if (typeof window === "undefined") return
@@ -77,6 +78,7 @@ export default function StudioMap({ venues, selectedId, onSelectVenue }: Props) 
 
       mapRef.current = map
       clusterRef.current = cluster
+      setMapReady(true)
     })
 
     return () => {
@@ -126,7 +128,7 @@ export default function StudioMap({ venues, selectedId, onSelectVenue }: Props) 
         }
       }
     })
-  }, [venues, onSelectVenue, selectedId])
+  }, [venues, onSelectVenue, selectedId, mapReady])
 
   useEffect(() => {
     if (!mapRef.current || !clusterRef.current) return
@@ -163,7 +165,7 @@ export default function StudioMap({ venues, selectedId, onSelectVenue }: Props) 
         }
       }
     })
-  }, [selectedId, venues])
+  }, [selectedId, venues, mapReady])
 
   return (
     <>
