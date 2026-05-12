@@ -37,6 +37,7 @@ export interface SearchFilters {
   closeHour: number | null
   date: string
   durationFilter: DurationFilter
+  areaId: string | null
 }
 
 export interface VenueSearchResult extends Venue {

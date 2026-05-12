@@ -93,16 +93,16 @@
 
 ---
 
-## ⑥ エリアフィルタ（梅田/難波/心斎橋等）
+## ⑥ エリアフィルタ（梅田/難波/心斎橋等）✅
 
 **目的**：エリア指定をワンタップで（住所文字列検索より早い）。
 
 **やること**
-- [ ] `src/lib/areas.ts`（新）にエリア定義：梅田/難波/心斎橋/天王寺/京橋/本町/福島/天満（中心 lat/lng + 半径 km）
-- [ ] `SearchFilters` 型に `areaId: string | null` を追加
-- [ ] UI：地名チップ（Task② ピル UI を流用、横スクロール可）
-- [ ] API：選択エリア中心からの半径内 venue だけ通す（haversine 近似で OK）
-- [ ] lat/lng null の venue は address の地名キーワードで補完判定
+- [x] `src/lib/areas.ts`（新）にエリア定義：梅田/難波/心斎橋/天王寺/京橋/本町/福島/天満（中心 lat/lng + 半径 km）
+- [x] `SearchFilters` 型に `areaId: string | null` を追加
+- [x] UI：地名チップ（Task② ピル UI を流用、横スクロール可）
+- [x] API：選択エリア中心からの半径内 venue だけ通す（haversine 近似で OK）
+- [x] lat/lng null の venue は address の地名キーワードで補完判定
 
 **完了条件**
 - 「梅田」チップで梅田駅周辺 ~1.5km の venue だけ残る

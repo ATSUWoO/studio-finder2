@@ -2,6 +2,7 @@
 
 import { SearchFilters, DurationFilter } from "@/lib/types"
 import { formatHour, formatPrice } from "@/lib/utils"
+import { AREAS } from "@/lib/areas"
 
 interface Props {
   filters: SearchFilters
@@ -55,10 +56,11 @@ export default function SearchFiltersComponent({ filters, onChange, resultCount 
 
   const hasActiveFilters =
     filters.query || filters.maxPrice !== null || filters.minCapacity !== null ||
-    filters.openHour !== null || filters.closeHour !== null || filters.durationFilter !== null
+    filters.openHour !== null || filters.closeHour !== null || filters.durationFilter !== null ||
+    filters.areaId !== null
 
   const clearFilters = () =>
-    onChange({ query: "", maxPrice: null, minCapacity: null, openHour: null, closeHour: null, date: filters.date, durationFilter: null })
+    onChange({ query: "", maxPrice: null, minCapacity: null, openHour: null, closeHour: null, date: filters.date, durationFilter: null, areaId: null })
 
   const activePresetId = ((): QuickPreset["id"] | null => {
     for (const p of QUICK_PRESETS) {
@@ -95,6 +97,25 @@ export default function SearchFiltersComponent({ filters, onChange, resultCount 
               }`}
             >
               {p.label}
+            </button>
+          )
+        })}
+      </div>
+
+      <div className="flex gap-2 overflow-x-auto -mx-1 px-1 pb-0.5">
+        {AREAS.map((a) => {
+          const active = filters.areaId === a.id
+          return (
+            <button
+              key={a.id}
+              onClick={() => set({ areaId: active ? null : a.id })}
+              className={`shrink-0 text-xs font-semibold rounded-full px-3 py-1.5 border transition-colors ${
+                active
+                  ? "bg-indigo-600 text-white border-indigo-600"
+                  : "bg-white text-gray-700 border-gray-300 hover:border-indigo-400 hover:text-indigo-600"
+              }`}
+            >
+              {a.label}
             </button>
           )
         })}

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { fetchAllAvailability } from "@/lib/providers"
 import { ProviderVenue, TimeSlot } from "@/lib/providers/types"
+import { findArea, venueMatchesArea } from "@/lib/areas"
 
 function slotDuration(slot: TimeSlot): number {
   const [sH] = slot.start.split(":").map(Number)
@@ -39,6 +40,7 @@ export async function GET(request: NextRequest) {
   const durationParam = searchParams.get("durationFilter")
   const durationFilter: "2h" | "3h" | "allnight" | null =
     durationParam === "2h" || durationParam === "3h" || durationParam === "allnight" ? durationParam : null
+  const area = findArea(searchParams.get("areaId"))
 
   const { venues: allVenues, errors } = await fetchAllAvailability(date)
 
@@ -50,6 +52,9 @@ export async function GET(request: NextRequest) {
       if (!venue.venueName.toLowerCase().includes(q) && !venue.address?.toLowerCase().includes(q)) {
         continue
       }
+    }
+    if (area && !venueMatchesArea(area, venue.lat, venue.lng, venue.address)) {
+      continue
     }
 
     const matchingRooms = venue.rooms
