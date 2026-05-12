@@ -6,18 +6,18 @@
 
 ---
 
-## ① 地図ピンのクラスタリング
+## ① 地図ピンのクラスタリング ✅
 
 **目的**：梅田 兎我野町周辺で複数スタジオのピンが重なって読めない問題を解消。
 
 **方針**：定番プラグイン `leaflet.markercluster` を使用。
 
 **やること**
-- [ ] `leaflet.markercluster` と型定義を npm install
-- [ ] `StudioMap.tsx` でマーカーを直接 `map.addTo` せずに `L.markerClusterGroup()` 経由で追加
-- [ ] クラスタアイコンを既存トーン（インディゴ系）に合わせて custom (`iconCreateFunction`)
-- [ ] ズームインで展開、適切なズーム閾値で `disableClusteringAtZoom` を設定
-- [ ] 選択ピンが含まれるクラスタは自動展開（`spiderfyOnMaxZoom` / `zoomToBoundsOnClick`）
+- [x] `leaflet.markercluster` と型定義を npm install
+- [x] `StudioMap.tsx` でマーカーを直接 `map.addTo` せずに `L.markerClusterGroup()` 経由で追加
+- [x] クラスタアイコンを既存トーン（インディゴ系）に合わせて custom (`iconCreateFunction`)
+- [x] ズームインで展開、適切なズーム閾値で `disableClusteringAtZoom` を設定
+- [x] 選択ピンが含まれるクラスタは自動展開（`zoomToShowLayer` で展開後 pan）
 
 **完了条件**
 - 梅田エリアでズームアウト時にピンがまとまる

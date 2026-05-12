@@ -1,6 +1,9 @@
 "use client"
 
 import { useEffect, useRef } from "react"
+import "leaflet/dist/leaflet.css"
+import "leaflet.markercluster/dist/MarkerCluster.css"
+import "leaflet.markercluster/dist/MarkerCluster.Default.css"
 
 export interface MapVenuePin {
   id: string
@@ -17,10 +20,17 @@ interface Props {
 
 const OSAKA_CENTER: [number, number] = [34.6937, 135.5022]
 const DEFAULT_ZOOM = 12
+const DISABLE_CLUSTERING_AT_ZOOM = 16
+
+type LeafletModule = typeof import("leaflet")
+type LMap = ReturnType<LeafletModule["map"]>
+type LMarker = ReturnType<LeafletModule["marker"]>
+type LMarkerClusterGroup = import("leaflet").MarkerClusterGroup
 
 export default function StudioMap({ venues, selectedId, onSelectVenue }: Props) {
-  const mapRef = useRef<ReturnType<typeof import("leaflet")["map"]> | null>(null)
-  const markersRef = useRef<Map<string, ReturnType<typeof import("leaflet")["marker"]>>>(new Map())
+  const mapRef = useRef<LMap | null>(null)
+  const clusterRef = useRef<LMarkerClusterGroup | null>(null)
+  const markersRef = useRef<Map<string, LMarker>>(new Map())
   const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -28,7 +38,7 @@ export default function StudioMap({ venues, selectedId, onSelectVenue }: Props) 
     if (!containerRef.current) return
     if (mapRef.current) return
 
-    import("leaflet").then((L) => {
+    Promise.all([import("leaflet"), import("leaflet.markercluster")]).then(([L]) => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       delete (L.Icon.Default.prototype as any)._getIconUrl
       L.Icon.Default.mergeOptions({
@@ -48,19 +58,38 @@ export default function StudioMap({ venues, selectedId, onSelectVenue }: Props) 
         maxZoom: 19,
       }).addTo(map)
 
+      const cluster = L.markerClusterGroup({
+        showCoverageOnHover: false,
+        spiderfyOnMaxZoom: true,
+        zoomToBoundsOnClick: true,
+        disableClusteringAtZoom: DISABLE_CLUSTERING_AT_ZOOM,
+        maxClusterRadius: 40,
+        iconCreateFunction: (c) => {
+          const count = c.getChildCount()
+          return L.divIcon({
+            html: `<div class="map-cluster"><span>${count}</span></div>`,
+            className: "map-cluster-wrapper",
+            iconSize: [36, 36],
+          })
+        },
+      })
+      map.addLayer(cluster)
+
       mapRef.current = map
+      clusterRef.current = cluster
     })
 
     return () => {
       mapRef.current?.remove()
       mapRef.current = null
+      clusterRef.current = null
       markersRef.current.clear()
     }
   }, [])
 
   useEffect(() => {
-    if (!mapRef.current) return
-    const map = mapRef.current
+    if (!mapRef.current || !clusterRef.current) return
+    const cluster = clusterRef.current
 
     import("leaflet").then((L) => {
       const currentIds = new Set(venues.map((v) => v.id))
@@ -68,7 +97,8 @@ export default function StudioMap({ venues, selectedId, onSelectVenue }: Props) 
 
       for (const id of existingIds) {
         if (!currentIds.has(id)) {
-          markersRef.current.get(id)?.remove()
+          const m = markersRef.current.get(id)
+          if (m) cluster.removeLayer(m)
           markersRef.current.delete(id)
         }
       }
@@ -89,9 +119,9 @@ export default function StudioMap({ venues, selectedId, onSelectVenue }: Props) 
           })
 
           const marker = L.marker([venue.lat, venue.lng], { icon })
-            .addTo(map)
             .on("click", () => onSelectVenue(venue))
 
+          cluster.addLayer(marker)
           markersRef.current.set(venue.id, marker)
         }
       }
@@ -99,7 +129,8 @@ export default function StudioMap({ venues, selectedId, onSelectVenue }: Props) 
   }, [venues, onSelectVenue, selectedId])
 
   useEffect(() => {
-    if (!mapRef.current) return
+    if (!mapRef.current || !clusterRef.current) return
+    const cluster = clusterRef.current
 
     import("leaflet").then((L) => {
       for (const [id, marker] of markersRef.current) {
@@ -123,8 +154,12 @@ export default function StudioMap({ venues, selectedId, onSelectVenue }: Props) 
 
       if (selectedId) {
         const venue = venues.find((v) => v.id === selectedId)
-        if (venue?.lat && venue?.lng) {
-          mapRef.current?.panTo([venue.lat, venue.lng], { animate: true })
+        const marker = markersRef.current.get(selectedId)
+        if (venue?.lat && venue?.lng && marker) {
+          // クラスタ内にある場合は展開して該当ピンを表示
+          cluster.zoomToShowLayer(marker, () => {
+            mapRef.current?.panTo([venue.lat!, venue.lng!], { animate: true })
+          })
         }
       }
     })
@@ -172,6 +207,27 @@ export default function StudioMap({ venues, selectedId, onSelectVenue }: Props) 
         }
         .map-pin--selected::after {
           border-top-color: #4f46e5;
+        }
+        .map-cluster-wrapper {
+          background: transparent;
+          border: none;
+        }
+        .map-cluster {
+          width: 36px;
+          height: 36px;
+          border-radius: 50%;
+          background: #6366f1;
+          color: white;
+          font-weight: 700;
+          font-size: 13px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.25), 0 2px 6px rgba(0,0,0,0.2);
+          cursor: pointer;
+        }
+        .map-cluster:hover {
+          background: #4f46e5;
         }
       `}</style>
       <div ref={containerRef} className="w-full h-full" />
