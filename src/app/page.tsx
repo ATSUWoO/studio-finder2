@@ -65,8 +65,8 @@ export default function HomePage() {
 
     try {
       const res = await fetch(`/api/availability?${params}`)
-      const data: ProviderVenue[] = await res.json()
-      setVenues(data)
+      const data: { venues: ProviderVenue[]; errors: { providerId: string; message: string }[] } = await res.json()
+      setVenues(data.venues)
     } catch {
       setVenues([])
     } finally {

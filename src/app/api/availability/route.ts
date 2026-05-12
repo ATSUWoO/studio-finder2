@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
   const openHour = searchParams.get("openHour") ? Number(searchParams.get("openHour")) : null
   const closeHour = searchParams.get("closeHour") ? Number(searchParams.get("closeHour")) : null
 
-  const allVenues = await fetchAllAvailability(date)
+  const { venues: allVenues, errors } = await fetchAllAvailability(date)
 
   const filtered: ProviderVenue[] = []
 
@@ -53,5 +53,5 @@ export async function GET(request: NextRequest) {
     filtered.push({ ...venue, rooms: matchingRooms })
   }
 
-  return NextResponse.json(filtered)
+  return NextResponse.json({ venues: filtered, errors })
 }

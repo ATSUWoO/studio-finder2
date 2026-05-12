@@ -9,18 +9,26 @@ const PROVIDERS: AvailabilityProvider[] = [
   new Studio1000Provider(),
 ]
 
-export async function fetchAllAvailability(date: string): Promise<ProviderVenue[]> {
+export async function fetchAllAvailability(date: string): Promise<{
+  venues: ProviderVenue[]
+  errors: { providerId: string; message: string }[]
+}> {
   const results = await Promise.allSettled(
     PROVIDERS.map((p) => p.fetchAvailability(date))
   )
 
   const venues: ProviderVenue[] = []
-  for (const result of results) {
+  const errors: { providerId: string; message: string }[] = []
+  for (let i = 0; i < results.length; i++) {
+    const result = results[i]
     if (result.status === "fulfilled") {
       venues.push(...result.value)
     } else {
-      console.error("Provider error:", result.reason)
+      const providerId = PROVIDERS[i].providerId
+      const message = String(result.reason)
+      console.error(`Provider error [${providerId}]:`, result.reason)
+      errors.push({ providerId, message })
     }
   }
-  return venues
+  return { venues, errors }
 }

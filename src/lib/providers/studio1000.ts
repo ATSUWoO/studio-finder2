@@ -70,8 +70,10 @@ export class Studio1000Provider implements AvailabilityProvider {
     })
     if (!roomsRes.ok) throw new Error(`Studio1000 /room HTTP ${roomsRes.status}`)
     const allRooms: S1Room[] = await roomsRes.json()
+    console.info(`[studio1000] allRooms.length=${allRooms.length}`)
 
     const osakaRooms = allRooms.filter(isOsaka)
+    console.info(`[studio1000] osakaRooms.length=${osakaRooms.length}`)
     if (osakaRooms.length === 0) return []
 
     const timeStart = `${date}T06:00:00.000+09:00`
@@ -87,9 +89,15 @@ export class Studio1000Provider implements AvailabilityProvider {
         return res.json() as Promise<S1Slot[]>
       })
     )
+    const rejectedChunks = chunkResults.filter((r) => r.status === "rejected")
+    if (rejectedChunks.length > 0) {
+      console.info(`[studio1000] chunk failures: ${rejectedChunks.length}/${chunkResults.length}`, rejectedChunks.map((r) => (r as PromiseRejectedResult).reason))
+    }
     const allSlots: S1Slot[] = chunkResults
       .filter((r): r is PromiseFulfilledResult<S1Slot[]> => r.status === "fulfilled")
       .flatMap((r) => r.value)
+    const availableSlotCount = allSlots.filter((s) => s.available === true || s.available === "true").length
+    console.info(`[studio1000] allSlots.length=${allSlots.length} availableSlotCount=${availableSlotCount}`)
 
     const slotsByRoom = new Map<string, TimeSlot[]>()
     for (const slot of allSlots) {
@@ -140,6 +148,7 @@ export class Studio1000Provider implements AvailabilityProvider {
       })
     }
 
+    console.info(`[studio1000] studioMap.size=${studioMap.size}`)
     return Array.from(studioMap.values())
   }
 }
