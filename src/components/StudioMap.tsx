@@ -15,6 +15,7 @@ interface Props {
   venues: MapVenuePin[]
   selectedId: string | null
   onSelectVenue: (venue: MapVenuePin) => void
+  onDeselect?: () => void
 }
 
 const OSAKA_CENTER: [number, number] = [34.6937, 135.5022]
@@ -26,12 +27,14 @@ type LMap = ReturnType<LeafletModule["map"]>
 type LMarker = ReturnType<LeafletModule["marker"]>
 type LMarkerClusterGroup = import("leaflet").MarkerClusterGroup
 
-export default function StudioMap({ venues, selectedId, onSelectVenue }: Props) {
+export default function StudioMap({ venues, selectedId, onSelectVenue, onDeselect }: Props) {
   const mapRef = useRef<LMap | null>(null)
   const clusterRef = useRef<LMarkerClusterGroup | null>(null)
   const markersRef = useRef<Map<string, LMarker>>(new Map())
   const containerRef = useRef<HTMLDivElement>(null)
   const [mapReady, setMapReady] = useState(false)
+  const onDeselectRef = useRef(onDeselect)
+  useEffect(() => { onDeselectRef.current = onDeselect }, [onDeselect])
 
   useEffect(() => {
     if (typeof window === "undefined") return
@@ -63,6 +66,7 @@ export default function StudioMap({ venues, selectedId, onSelectVenue }: Props) 
         zoom: DEFAULT_ZOOM,
         zoomControl: true,
       })
+      map.on("click", () => { onDeselectRef.current?.() })
 
       L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
@@ -170,9 +174,11 @@ export default function StudioMap({ venues, selectedId, onSelectVenue }: Props) 
         const venue = venues.find((v) => v.id === selectedId)
         const marker = markersRef.current.get(selectedId)
         if (venue?.lat && venue?.lng && marker) {
-          // クラスタ内にある場合は展開して該当ピンを表示
           cluster.zoomToShowLayer(marker, () => {
-            mapRef.current?.panTo([venue.lat!, venue.lng!], { animate: true })
+            const map = mapRef.current
+            if (!map) return
+            const targetZoom = Math.max(map.getZoom(), 15)
+            map.flyTo([venue.lat!, venue.lng!], targetZoom, { animate: true, duration: 0.5 })
           })
         }
       }

@@ -1,12 +1,13 @@
 "use client"
 
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import dynamic from "next/dynamic"
 import { SearchFilters } from "@/lib/types"
 import { ProviderVenue } from "@/lib/providers/types"
 import { MapVenuePin } from "@/components/StudioMap"
 import SearchFiltersComponent from "@/components/SearchFilters"
 import AvailabilityCard from "@/components/AvailabilityCard"
+import { formatPrice } from "@/lib/utils"
 
 const StudioMap = dynamic(() => import("@/components/StudioMap"), {
   ssr: false,
@@ -27,6 +28,71 @@ const DEFAULT_FILTERS: SearchFilters = {
 interface RoomCard {
   venue: ProviderVenue
   roomIndex: number
+}
+
+const PROVIDER_LABELS: Record<string, string> = {
+  studioax: "Studio AX",
+  alleyoop: "Alleyoop",
+  studio1000: "Studio1000",
+}
+
+function MapBottomSheet({ venue, onClose }: { venue: ProviderVenue; onClose: () => void }) {
+  const prices = venue.rooms.flatMap((r) => r.slots.map((s) => s.price).filter((p): p is number => p !== null))
+  const minPrice = prices.length > 0 ? Math.min(...prices) : null
+  const maxPrice = prices.length > 0 ? Math.max(...prices) : null
+
+  return (
+    <div className="absolute bottom-0 left-0 right-0 z-[1000] bg-white rounded-t-2xl shadow-2xl border-t border-gray-100 p-4 pb-safe">
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <div className="flex items-center gap-1.5 mb-0.5">
+            <span className="text-xs bg-emerald-50 text-emerald-600 rounded px-1.5 py-0.5 font-medium shrink-0">
+              {PROVIDER_LABELS[venue.providerId] ?? venue.providerId}
+            </span>
+          </div>
+          <h3 className="font-bold text-gray-900 text-base leading-snug truncate">{venue.venueName}</h3>
+          {venue.address && (
+            <p className="text-xs text-gray-500 mt-0.5 line-clamp-1">{venue.address}</p>
+          )}
+        </div>
+        <button
+          onClick={onClose}
+          className="shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200"
+          aria-label="閉じる"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <div className="flex items-center justify-between mt-3">
+        <div className="text-sm text-gray-500">
+          {minPrice !== null ? (
+            <span>
+              <span className="text-indigo-600 font-bold text-lg">{formatPrice(minPrice)}</span>
+              {maxPrice !== null && maxPrice !== minPrice && (
+                <span className="text-sm">〜{formatPrice(maxPrice)}</span>
+              )}
+              <span className="text-xs ml-0.5">/時</span>
+            </span>
+          ) : (
+            <span className="text-gray-400 text-sm">料金未定</span>
+          )}
+        </div>
+        {venue.sourceUrl && (
+          <a
+            href={venue.sourceUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm bg-indigo-600 text-white font-semibold px-4 py-2 rounded-full hover:bg-indigo-700 transition-colors"
+          >
+            予約サイトへ →
+          </a>
+        )}
+      </div>
+    </div>
+  )
 }
 
 function SkeletonCard() {
@@ -53,6 +119,14 @@ export default function HomePage() {
   const [selectedVenueId, setSelectedVenueId] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<"list" | "map">("list")
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setSelectedVenueId(null)
+    }
+    window.addEventListener("keydown", onKeyDown)
+    return () => window.removeEventListener("keydown", onKeyDown)
+  }, [])
 
   const fetchVenues = useCallback(async (f: SearchFilters) => {
     setLoading(true)
@@ -94,6 +168,11 @@ export default function HomePage() {
     }, 50)
   }, [])
 
+  const selectedVenue = useMemo(
+    () => venues.find((v) => v.venueId === selectedVenueId) ?? null,
+    [venues, selectedVenueId]
+  )
+
   const mapVenues: MapVenuePin[] = venues
     .filter((v) => v.lat !== null && v.lng !== null)
     .map((v) => ({ id: v.venueId, name: v.venueName, lat: v.lat, lng: v.lng }))
@@ -123,19 +202,25 @@ export default function HomePage() {
         />
       </div>
 
-      <div className="md:hidden shrink-0 flex border-b border-gray-200 bg-white">
-        <button
-          onClick={() => setActiveTab("list")}
-          className={`flex-1 py-2 text-sm font-medium ${activeTab === "list" ? "text-indigo-600 border-b-2 border-indigo-600" : "text-gray-500"}`}
-        >
-          一覧
-        </button>
-        <button
-          onClick={() => setActiveTab("map")}
-          className={`flex-1 py-2 text-sm font-medium ${activeTab === "map" ? "text-indigo-600 border-b-2 border-indigo-600" : "text-gray-500"}`}
-        >
-          地図
-        </button>
+      <div className="md:hidden shrink-0 px-4 py-2 bg-white border-b border-gray-100">
+        <div className="flex bg-gray-100 rounded-full p-1">
+          <button
+            onClick={() => setActiveTab("list")}
+            className={`flex-1 py-1.5 text-sm font-semibold rounded-full transition-all ${
+              activeTab === "list" ? "bg-white text-indigo-600 shadow-sm" : "text-gray-500"
+            }`}
+          >
+            一覧
+          </button>
+          <button
+            onClick={() => setActiveTab("map")}
+            className={`flex-1 py-1.5 text-sm font-semibold rounded-full transition-all ${
+              activeTab === "map" ? "bg-white text-indigo-600 shadow-sm" : "text-gray-500"
+            }`}
+          >
+            地図
+          </button>
+        </div>
       </div>
 
       <div className="flex flex-1 overflow-hidden">
@@ -171,7 +256,7 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className={`flex-1 ${activeTab === "list" ? "hidden md:block" : ""}`}>
+        <div className={`flex-1 relative ${activeTab === "list" ? "hidden md:block" : ""}`}>
           <StudioMap
             venues={mapVenues}
             selectedId={selectedVenueId}
@@ -182,7 +267,14 @@ export default function HomePage() {
                 handleSelectVenue(v.id, `venue-card-${v.id}-${room.roomId}`)
               }
             }}
+            onDeselect={() => setSelectedVenueId(null)}
           />
+          {selectedVenue && (
+            <MapBottomSheet
+              venue={selectedVenue}
+              onClose={() => setSelectedVenueId(null)}
+            />
+          )}
         </div>
       </div>
     </div>
