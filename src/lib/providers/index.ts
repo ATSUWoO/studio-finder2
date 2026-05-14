@@ -2,15 +2,18 @@ import { AvailabilityProvider, ProviderVenue } from "./types"
 import { StudioAxProvider } from "./studioax"
 import { AlleyoopProvider } from "./alleyoop"
 import { Studio1000Provider } from "./studio1000"
-import { BuzzProvider } from "./buzz"
-import { SproutProvider } from "./sprout"
+// BuzzProvider / SproutProvider: Cloudflare WAF "Host not in allowlist" (HTTP 403) で
+// サーバーサイド fetch が完全ブロックされる。ヘッダー偽装では回避不可。
+// Playwright 等のヘッドレスブラウザ対応後に再有効化する。
+// import { BuzzProvider } from "./buzz"
+// import { SproutProvider } from "./sprout"
 
 const PROVIDERS: AvailabilityProvider[] = [
   new StudioAxProvider(),
   new AlleyoopProvider(),
   new Studio1000Provider(),
-  new BuzzProvider(),
-  new SproutProvider(),
+  // new BuzzProvider(),
+  // new SproutProvider(),
 ]
 
 export async function fetchAllAvailability(date: string): Promise<{
