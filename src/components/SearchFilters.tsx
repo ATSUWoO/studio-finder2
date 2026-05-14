@@ -12,9 +12,9 @@ interface Props {
 }
 
 const PRICE_OPTIONS = [
-  { label: `〜${formatPrice(1000)}`, value: 1000 },
-  { label: `〜${formatPrice(2000)}`, value: 2000 },
-  { label: `〜${formatPrice(3000)}`, value: 3000 },
+  { label: `〜${formatPrice(1000)}/時`, value: 1000 },
+  { label: `〜${formatPrice(2000)}/時`, value: 2000 },
+  { label: `〜${formatPrice(3000)}/時`, value: 3000 },
 ]
 
 const CAPACITY_OPTIONS = [
@@ -54,10 +54,9 @@ const QUICK_PRESETS: QuickPreset[] = [
 function countAdvancedActive(filters: SearchFilters): number {
   return [
     filters.maxPrice !== null,
-    filters.minCapacity !== null,
     filters.durationFilter !== null,
     filters.sortBy !== "default",
-    filters.openHour !== null || filters.closeHour !== null,
+    filters.areaId !== null,
   ].filter(Boolean).length
 }
 
@@ -102,47 +101,56 @@ export default function SearchFiltersComponent({ filters, onChange, resultCount 
 
   return (
     <div className="bg-white border-b border-gray-200 px-4 pt-3 pb-2 space-y-2.5">
-      {/* Quick time presets */}
-      <div className="flex gap-2 overflow-x-auto -mx-1 px-1 pb-0.5 scrollbar-hide">
-        {QUICK_PRESETS.map((p) => {
-          const active = activePresetId === p.id
-          return (
-            <button
-              key={p.id}
-              onClick={() => togglePreset(p)}
-              className={`shrink-0 text-xs font-semibold rounded-full px-3 py-1.5 border transition-colors ${
-                active
-                  ? "bg-indigo-600 text-white border-indigo-600"
-                  : "bg-white text-gray-700 border-gray-300 hover:border-indigo-400 hover:text-indigo-600"
-              }`}
-            >
-              {p.label}
-            </button>
-          )
-        })}
+      {/* Row 1: 定員 */}
+      <div className="flex items-center gap-2">
+        <span className="text-xs text-gray-500 shrink-0">定員</span>
+        <div className="flex gap-2 overflow-x-auto pb-0.5 scrollbar-hide">
+          {CAPACITY_OPTIONS.map((opt) => {
+            const active = filters.minCapacity === opt.value
+            return (
+              <button
+                key={opt.value}
+                onClick={() => set({ minCapacity: active ? null : opt.value })}
+                className={`shrink-0 text-xs font-semibold rounded-full px-3 py-1.5 border transition-colors ${
+                  active
+                    ? "bg-indigo-600 text-white border-indigo-600"
+                    : "bg-white text-gray-700 border-gray-300 hover:border-indigo-400 hover:text-indigo-600"
+                }`}
+              >
+                {opt.label}
+              </button>
+            )
+          })}
+        </div>
       </div>
 
-      {/* Area chips */}
-      <div className="flex gap-2 overflow-x-auto -mx-1 px-1 pb-0.5 scrollbar-hide">
-        {AREAS.map((a) => {
-          const active = filters.areaId === a.id
-          return (
-            <button
-              key={a.id}
-              onClick={() => set({ areaId: active ? null : a.id })}
-              className={`shrink-0 text-xs font-semibold rounded-full px-3 py-1.5 border transition-colors ${
-                active
-                  ? "bg-indigo-600 text-white border-indigo-600"
-                  : "bg-white text-gray-700 border-gray-300 hover:border-indigo-400 hover:text-indigo-600"
-              }`}
-            >
-              {a.label}
-            </button>
-          )
-        })}
+      {/* Row 2: 開始〜終了時間 */}
+      <div className="flex items-center gap-2">
+        <span className="text-xs text-gray-500 shrink-0">時間</span>
+        <select
+          value={filters.openHour ?? ""}
+          onChange={(e) => set({ openHour: e.target.value ? Number(e.target.value) : null })}
+          className="text-sm border border-gray-300 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+        >
+          <option value="">開始 ▼</option>
+          {HOUR_OPTIONS.map((h) => (
+            <option key={h} value={h}>{formatHour(h)}</option>
+          ))}
+        </select>
+        <span className="text-gray-400 text-sm">〜</span>
+        <select
+          value={filters.closeHour ?? ""}
+          onChange={(e) => set({ closeHour: e.target.value ? Number(e.target.value) : null })}
+          className="text-sm border border-gray-300 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+        >
+          <option value="">終了 ▼</option>
+          {HOUR_OPTIONS.map((h) => (
+            <option key={h} value={h}>{formatHour(h)}</option>
+          ))}
+        </select>
       </div>
 
-      {/* Date + search */}
+      {/* Row 3: 日付 + テキスト検索 */}
       <div className="flex gap-2">
         <input
           type="date"
@@ -168,84 +176,92 @@ export default function SearchFiltersComponent({ filters, onChange, resultCount 
         </div>
       </div>
 
-      {/* Advanced filters panel (collapsible) */}
+      {/* 詳細フィルタパネル（折りたたみ） */}
       <div
         className={`overflow-hidden transition-all duration-200 ${
-          isAdvancedOpen ? "max-h-48 opacity-100" : "max-h-0 opacity-0"
+          isAdvancedOpen ? "max-h-64 opacity-100" : "max-h-0 opacity-0"
         }`}
       >
-        <div className="pt-1 pb-0.5 flex flex-wrap gap-2">
-          <select
-            value={filters.maxPrice ?? ""}
-            onChange={(e) => set({ maxPrice: e.target.value ? Number(e.target.value) : null })}
-            className="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
-          >
-            <option value="">料金 ▼</option>
-            {PRICE_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
-            ))}
-          </select>
-
-          <select
-            value={filters.minCapacity ?? ""}
-            onChange={(e) => set({ minCapacity: e.target.value ? Number(e.target.value) : null })}
-            className="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
-          >
-            <option value="">定員 ▼</option>
-            {CAPACITY_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
-            ))}
-          </select>
-
-          <select
-            value={filters.durationFilter ?? ""}
-            onChange={(e) => set({ durationFilter: (e.target.value || null) as DurationFilter })}
-            className="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
-          >
-            <option value="">コマ ▼</option>
-            <option value="2h">2h連続</option>
-            <option value="3h">3h連続</option>
-            <option value="allnight">オールナイトのみ</option>
-          </select>
-
-          <select
-            value={filters.sortBy}
-            onChange={(e) => set({ sortBy: e.target.value as SortBy })}
-            className="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
-          >
-            <option value="default">並び替え ▼</option>
-            <option value="priceAsc">安い順</option>
-            <option value="slotsDesc">空きが多い順</option>
-            <option value="nameAsc">名前順</option>
-          </select>
-
-          <div className="flex items-center gap-1 text-sm">
+        <div className="pt-1 pb-0.5 space-y-2.5">
+          {/* 料金 / コマ / 並び替え */}
+          <div className="flex flex-wrap gap-2">
             <select
-              value={filters.openHour ?? ""}
-              onChange={(e) => set({ openHour: e.target.value ? Number(e.target.value) : null })}
-              className="border border-gray-300 rounded-lg px-2 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+              value={filters.maxPrice ?? ""}
+              onChange={(e) => set({ maxPrice: e.target.value ? Number(e.target.value) : null })}
+              className="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
             >
-              <option value="">開始 ▼</option>
-              {HOUR_OPTIONS.map((h) => (
-                <option key={h} value={h}>{formatHour(h)}</option>
+              <option value="">料金(/時) ▼</option>
+              {PRICE_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
               ))}
             </select>
-            <span className="text-gray-400">〜</span>
+
             <select
-              value={filters.closeHour ?? ""}
-              onChange={(e) => set({ closeHour: e.target.value ? Number(e.target.value) : null })}
-              className="border border-gray-300 rounded-lg px-2 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+              value={filters.durationFilter ?? ""}
+              onChange={(e) => set({ durationFilter: (e.target.value || null) as DurationFilter })}
+              className="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
             >
-              <option value="">終了 ▼</option>
-              {HOUR_OPTIONS.map((h) => (
-                <option key={h} value={h}>{formatHour(h)}</option>
-              ))}
+              <option value="">コマ ▼</option>
+              <option value="2h">2h連続</option>
+              <option value="3h">3h連続</option>
+              <option value="allnight">オールナイトのみ</option>
             </select>
+
+            <select
+              value={filters.sortBy}
+              onChange={(e) => set({ sortBy: e.target.value as SortBy })}
+              className="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+            >
+              <option value="default">並び替え ▼</option>
+              <option value="priceAsc">安い順</option>
+              <option value="slotsDesc">空きが多い順</option>
+              <option value="nameAsc">名前順</option>
+            </select>
+          </div>
+
+          {/* エリアチップ */}
+          <div className="flex gap-2 overflow-x-auto -mx-1 px-1 pb-0.5 scrollbar-hide">
+            {AREAS.map((a) => {
+              const active = filters.areaId === a.id
+              return (
+                <button
+                  key={a.id}
+                  onClick={() => set({ areaId: active ? null : a.id })}
+                  className={`shrink-0 text-xs font-semibold rounded-full px-3 py-1.5 border transition-colors ${
+                    active
+                      ? "bg-indigo-600 text-white border-indigo-600"
+                      : "bg-white text-gray-700 border-gray-300 hover:border-indigo-400 hover:text-indigo-600"
+                  }`}
+                >
+                  {a.label}
+                </button>
+              )
+            })}
+          </div>
+
+          {/* クイックプリセット */}
+          <div className="flex gap-2 overflow-x-auto -mx-1 px-1 pb-0.5 scrollbar-hide">
+            {QUICK_PRESETS.map((p) => {
+              const active = activePresetId === p.id
+              return (
+                <button
+                  key={p.id}
+                  onClick={() => togglePreset(p)}
+                  className={`shrink-0 text-xs font-semibold rounded-full px-3 py-1.5 border transition-colors ${
+                    active
+                      ? "bg-indigo-600 text-white border-indigo-600"
+                      : "bg-white text-gray-700 border-gray-300 hover:border-indigo-400 hover:text-indigo-600"
+                  }`}
+                >
+                  {p.label}
+                </button>
+              )
+            })}
           </div>
         </div>
       </div>
 
-      {/* Result count + favorites + advanced toggle + clear */}
+      {/* Row 4: 件数 + お気に入り + 詳細トグル + クリア */}
       <div className="flex items-center justify-between text-sm">
         <span className="text-gray-600">
           <span className="font-semibold text-indigo-600">{resultCount}</span> 件が空いています
