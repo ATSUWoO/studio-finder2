@@ -2,11 +2,15 @@ import { AvailabilityProvider, ProviderVenue } from "./types"
 import { StudioAxProvider } from "./studioax"
 import { AlleyoopProvider } from "./alleyoop"
 import { Studio1000Provider } from "./studio1000"
+import { BuzzProvider } from "./buzz"
+import { SproutProvider } from "./sprout"
 
 const PROVIDERS: AvailabilityProvider[] = [
   new StudioAxProvider(),
   new AlleyoopProvider(),
   new Studio1000Provider(),
+  new BuzzProvider(),
+  new SproutProvider(),
 ]
 
 export async function fetchAllAvailability(date: string): Promise<{

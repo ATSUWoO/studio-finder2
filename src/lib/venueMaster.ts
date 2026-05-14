@@ -183,6 +183,113 @@ export const VENUE_MASTER: VenueMaster[] = [
     lng: 135.5044,
     sourceUrl: "https://m.studio1000.jp/studio/29",
   },
+
+  // ────────────────────────────────────────────
+  // BUZZ
+  // ────────────────────────────────────────────
+  {
+    providerId: "buzz",
+    venueId: "buzz-umeda",
+    venueName: "BUZZ大阪梅田",
+    address: "大阪市北区東梅田付近",
+    lat: 34.7024,
+    lng: 135.5013,
+    sourceUrl: "https://buzz-st.com/osakaumeda",
+  },
+  {
+    providerId: "buzz",
+    venueId: "buzz-shinsaibashi",
+    venueName: "BUZZ大阪心斎橋",
+    address: "大阪市中央区心斎橋付近",
+    lat: 34.6730,
+    lng: 135.5007,
+    sourceUrl: "https://buzz-st.com/osakashinsaibashi",
+  },
+  {
+    providerId: "buzz",
+    venueId: "buzz-kyobashi",
+    venueName: "BUZZ大阪京橋",
+    address: "大阪市城東区京橋付近",
+    lat: 34.6968,
+    lng: 135.5325,
+    sourceUrl: "https://buzz-st.com/osakakyobashi",
+  },
+
+  // ────────────────────────────────────────────
+  // スプラウトレンタルスタジオ
+  // ────────────────────────────────────────────
+  {
+    providerId: "sprout",
+    venueId: "sprout-umeda",
+    venueName: "スプラウトレンタルスタジオ 梅田本店",
+    address: "大阪市北区梅田付近",
+    lat: 34.7024,
+    lng: 135.4959,
+    sourceUrl: "https://www.sprout-rental.com/reserve/?sid=1",
+  },
+  {
+    providerId: "sprout",
+    venueId: "sprout-umeda-block",
+    venueName: "スプラウトレンタルスタジオ 梅田BLOCK",
+    address: "大阪市北区梅田付近",
+    lat: 34.7031,
+    lng: 135.4967,
+    sourceUrl: "https://www.sprout-rental.com/reserve/?sid=11",
+  },
+  {
+    providerId: "sprout",
+    venueId: "sprout-umekita",
+    venueName: "スプラウトレンタルスタジオ うめきた",
+    address: "大阪市北区大深町付近",
+    lat: 34.7065,
+    lng: 135.4935,
+    sourceUrl: "https://www.sprout-rental.com/reserve/?sid=81",
+  },
+  {
+    providerId: "sprout",
+    venueId: "sprout-umekita-roots",
+    venueName: "スプラウトレンタルスタジオ うめきたROOTS",
+    address: "大阪市北区大深町付近",
+    lat: 34.7068,
+    lng: 135.4940,
+    sourceUrl: "https://www.sprout-rental.com/reserve/?sid=87",
+  },
+  {
+    providerId: "sprout",
+    venueId: "sprout-nakatsu",
+    venueName: "スプラウトレンタルスタジオ 中津",
+    address: "大阪市北区中津付近",
+    lat: 34.7085,
+    lng: 135.4951,
+    sourceUrl: "https://www.sprout-rental.com/reserve/?sid=91",
+  },
+  {
+    providerId: "sprout",
+    venueId: "sprout-kitaumeda",
+    venueName: "スプラウトレンタルスタジオ 北梅田",
+    address: "大阪市北区梅田付近",
+    lat: 34.7042,
+    lng: 135.4945,
+    sourceUrl: "https://www.sprout-rental.com/reserve/?sid=41",
+  },
+  {
+    providerId: "sprout",
+    venueId: "sprout-kantele",
+    venueName: "スプラウトレンタルスタジオ 関テレ前",
+    address: "大阪市福島区海老江付近",
+    lat: 34.6994,
+    lng: 135.4876,
+    sourceUrl: "https://www.sprout-rental.com/reserve/?sid=61",
+  },
+  {
+    providerId: "sprout",
+    venueId: "sprout-ogimachi",
+    venueName: "スプラウトレンタルスタジオ 扇町",
+    address: "大阪市北区扇町付近",
+    lat: 34.7019,
+    lng: 135.5070,
+    sourceUrl: "https://www.sprout-rental.com/reserve/?sid=51",
+  },
 ]
 
 // ────────────────────────────────────────────
