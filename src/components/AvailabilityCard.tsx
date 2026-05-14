@@ -1,6 +1,7 @@
 "use client"
 
 import { ProviderVenue, ProviderRoom } from "@/lib/providers/types"
+import { PROVIDER_LABELS } from "@/lib/providers/registry"
 import { formatPrice, cn } from "@/lib/utils"
 
 interface Props {
@@ -10,12 +11,6 @@ interface Props {
   onSelect: () => void
   isFavorite?: boolean
   onToggleFavorite?: () => void
-}
-
-const PROVIDER_LABELS: Record<string, string> = {
-  studioax: "Studio AX",
-  alleyoop: "Alleyoop",
-  studio1000: "Studio1000",
 }
 
 export default function AvailabilityCard({ venue, room, isSelected, onSelect, isFavorite, onToggleFavorite }: Props) {

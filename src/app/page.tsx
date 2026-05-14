@@ -11,6 +11,7 @@ import AvailabilityCard from "@/components/AvailabilityCard"
 import { formatPrice } from "@/lib/utils"
 import { useFavorites } from "@/hooks/useFavorites"
 import { filtersFromParams, filtersToParams } from "@/lib/filterUrl"
+import { PROVIDER_LABELS } from "@/lib/providers/registry"
 
 const StudioMap = dynamic(() => import("@/components/StudioMap"), {
   ssr: false,
@@ -28,12 +29,6 @@ function minVenuePrice(v: ProviderVenue): number | null {
 }
 function totalSlots(v: ProviderVenue): number {
   return v.rooms.reduce((sum, r) => sum + r.slots.length, 0)
-}
-
-const PROVIDER_LABELS: Record<string, string> = {
-  studioax: "Studio AX",
-  alleyoop: "Alleyoop",
-  studio1000: "Studio1000",
 }
 
 function MapBottomSheet({ venue, onClose, onViewInList }: { venue: ProviderVenue; onClose: () => void; onViewInList: () => void }) {

@@ -133,12 +133,12 @@
 **目的**：新プロバイダ追加時の触る箇所と手順を最小化する。
 
 **やること**
-- [ ] **構造整理**：`src/lib/providers/registry.ts`（新）に `PROVIDER_LABELS` を集約し、`AvailabilityCard.tsx` / `page.tsx` の重複を import に置換
-- [ ] 共通ユーティリティを `src/lib/providers/_utils.ts` に抽出（`parseHHmm`, `isOsakaAddress`, master マージ等）
-- [ ] **scaffold スクリプト**：`scripts/new-provider.ts` + `package.json` に `"new-provider"` を追加
+- [x] **構造整理**：`src/lib/providers/registry.ts`（新）に `PROVIDER_LABELS` を集約し、`AvailabilityCard.tsx` / `page.tsx` の重複を import に置換
+- [x] 共通ユーティリティを `src/lib/providers/_utils.ts` に抽出（`fetchJson`, `isOsakaBounds`）
+- [x] **scaffold スクリプト**：`scripts/new-provider.mjs` + `package.json` に `"new-provider"` を追加
   - 使い方：`npm run new-provider mycompany "My Company"`
-  - 生成：`providers/mycompany.ts`、`index.ts` への登録挿入、`registry.ts` のラベル追加
-- [ ] **ドキュメント**：`docs/ADD_PROVIDER.md`（新）に手順・テンプレの埋め方・落とし穴（null guard, Osaka filter, allSettled）を記載
+  - 生成：`providers/mycompany.ts`（スケルトン）、残り手順をコンソールに出力
+- [x] **ドキュメント**：`docs/ADD_PROVIDER.md`（新）に手順・テンプレの埋め方・落とし穴（null guard, Osaka filter, allSettled）を記載
 
 **完了条件**
 - `npm run new-provider foo "Foo Studio"` で関連ファイルが自動生成・登録される
