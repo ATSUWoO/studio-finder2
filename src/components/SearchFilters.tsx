@@ -4,6 +4,7 @@ import { useState } from "react"
 import { SearchFilters, DurationFilter, SortBy } from "@/lib/types"
 import { formatHour, formatPrice } from "@/lib/utils"
 import { AREAS } from "@/lib/areas"
+import { todayStr, tomorrowStr, nowOpenHour } from "@/lib/dateUtils"
 
 interface Props {
   filters: SearchFilters
@@ -25,19 +26,7 @@ const CAPACITY_OPTIONS = [
 
 const HOUR_OPTIONS = Array.from({ length: 17 }, (_, i) => i + 7)
 
-const DEFAULT_DATE = new Date().toISOString().split("T")[0]
-
-function todayString() {
-  return new Date().toISOString().split("T")[0]
-}
-function tomorrowString() {
-  const d = new Date()
-  d.setDate(d.getDate() + 1)
-  return d.toISOString().split("T")[0]
-}
-function nowOpenHour() {
-  return Math.max(7, Math.min(23, new Date().getHours() + 1))
-}
+const DEFAULT_DATE = todayStr()
 
 type QuickPreset = {
   id: "now" | "tonight" | "tomorrow-morning"
@@ -46,9 +35,9 @@ type QuickPreset = {
 }
 
 const QUICK_PRESETS: QuickPreset[] = [
-  { id: "now", label: "今すぐ", build: () => ({ date: todayString(), openHour: nowOpenHour(), closeHour: null }) },
-  { id: "tonight", label: "今夜", build: () => ({ date: todayString(), openHour: 18, closeHour: 23 }) },
-  { id: "tomorrow-morning", label: "明日朝", build: () => ({ date: tomorrowString(), openHour: 7, closeHour: 12 }) },
+  { id: "now", label: "今すぐ", build: () => ({ date: todayStr(), openHour: nowOpenHour(), closeHour: null }) },
+  { id: "tonight", label: "今夜", build: () => ({ date: todayStr(), openHour: 18, closeHour: 23 }) },
+  { id: "tomorrow-morning", label: "明日朝", build: () => ({ date: tomorrowStr(), openHour: 7, closeHour: 12 }) },
 ]
 
 function countAdvancedActive(filters: SearchFilters): number {
@@ -92,7 +81,7 @@ export default function SearchFiltersComponent({ filters, onChange, resultCount 
 
   const togglePreset = (preset: QuickPreset) => {
     if (activePresetId === preset.id) {
-      set({ date: todayString(), openHour: null, closeHour: null })
+      set({ date: todayStr(), openHour: null, closeHour: null })
     } else {
       const v = preset.build()
       set({ date: v.date, openHour: v.openHour, closeHour: v.closeHour })

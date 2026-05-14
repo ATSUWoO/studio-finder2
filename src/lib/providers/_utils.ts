@@ -5,6 +5,13 @@ export async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> 
   return res.json()
 }
 
+/** Splits an array into chunks of the given size. */
+export function chunk<T>(arr: T[], size: number): T[][] {
+  return Array.from({ length: Math.ceil(arr.length / size) }, (_, i) =>
+    arr.slice(i * size, (i + 1) * size)
+  )
+}
+
 /** Osaka prefecture bounding box. */
 export const OSAKA_BOUNDS = { latMin: 34.0, latMax: 35.1, lngMin: 135.0, lngMax: 136.0 }
 

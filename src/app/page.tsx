@@ -23,18 +23,21 @@ interface RoomCard {
   roomIndex: number
 }
 
-function minVenuePrice(v: ProviderVenue): number | null {
+function venuePriceRange(v: ProviderVenue): { min: number | null; max: number | null } {
   const prices = v.rooms.flatMap((r) => r.slots.map((s) => s.price).filter((p): p is number => p !== null))
-  return prices.length > 0 ? Math.min(...prices) : null
+  if (prices.length === 0) return { min: null, max: null }
+  return { min: Math.min(...prices), max: Math.max(...prices) }
+}
+
+function minVenuePrice(v: ProviderVenue): number | null {
+  return venuePriceRange(v).min
 }
 function totalSlots(v: ProviderVenue): number {
   return v.rooms.reduce((sum, r) => sum + r.slots.length, 0)
 }
 
 function MapBottomSheet({ venue, onClose, onViewInList }: { venue: ProviderVenue; onClose: () => void; onViewInList: () => void }) {
-  const prices = venue.rooms.flatMap((r) => r.slots.map((s) => s.price).filter((p): p is number => p !== null))
-  const minPrice = prices.length > 0 ? Math.min(...prices) : null
-  const maxPrice = prices.length > 0 ? Math.max(...prices) : null
+  const { min: minPrice, max: maxPrice } = venuePriceRange(venue)
 
   return (
     <div className="absolute bottom-0 left-0 right-0 z-[1000] bg-white rounded-t-3xl shadow-2xl shadow-slate-900/20 border-t border-gray-100 pt-3 px-4 pb-6">

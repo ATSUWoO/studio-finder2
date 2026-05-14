@@ -4,6 +4,8 @@ import { useCallback, useSyncExternalStore } from "react"
 
 const STORAGE_KEY = "studio-finder.favorites"
 
+// モジュールレベルのキャッシュ: useSyncExternalStore は毎レンダーで readSnapshot を呼ぶため、
+// localStorage の文字列が変わっていなければ同じ配列参照を返してレンダーを抑制する。
 let cachedSnapshot: readonly string[] = []
 let cachedSnapshotRaw: string | null = null
 const listeners = new Set<() => void>()

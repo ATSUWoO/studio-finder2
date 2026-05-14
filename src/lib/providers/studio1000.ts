@@ -1,5 +1,5 @@
 import { AvailabilityProvider, ProviderVenue, TimeSlot } from "./types"
-import { fetchJson, isOsakaBounds } from "./_utils"
+import { fetchJson, chunk, isOsakaBounds } from "./_utils"
 import { findStudio1000Venue, isKnownStudio1000Id } from "@/lib/venueMaster"
 
 const BASE_URL = "https://api.m.studio1000.jp/api"
@@ -41,12 +41,6 @@ function isOsaka(room: S1Room): boolean {
   }
   // 住所・座標で判定できない場合はstudioIdで照合（studioId指定済みのマスターのみマッチ）
   return isKnownStudio1000Id(room.studio?.id ?? -1)
-}
-
-function chunk<T>(arr: T[], size: number): T[][] {
-  return Array.from({ length: Math.ceil(arr.length / size) }, (_, i) =>
-    arr.slice(i * size, (i + 1) * size)
-  )
 }
 
 function toHHMM(hour: number): string {

@@ -1,45 +1,20 @@
 import { NextRequest, NextResponse } from "next/server"
 import { fetchAllAvailability } from "@/lib/providers"
-import { ProviderVenue, TimeSlot } from "@/lib/providers/types"
+import { ProviderVenue } from "@/lib/providers/types"
 import { findArea, venueMatchesArea } from "@/lib/areas"
-
-function slotDuration(slot: TimeSlot): number {
-  const [sH] = slot.start.split(":").map(Number)
-  const [eH] = slot.end.split(":").map(Number)
-  return (eH - sH + 24) % 24 || 24
-}
-
-function filterByMinDuration(slots: TimeSlot[], minHours: number): TimeSlot[] {
-  if (slots.length === 0) return slots
-  const sorted = [...slots].sort((a, b) => a.start.localeCompare(b.start))
-  const kept: TimeSlot[] = []
-  let i = 0
-  while (i < sorted.length) {
-    let j = i
-    let total = slotDuration(sorted[j])
-    while (j + 1 < sorted.length && sorted[j].end === sorted[j + 1].start) {
-      j++
-      total += slotDuration(sorted[j])
-    }
-    if (total >= minHours) {
-      for (let k = i; k <= j; k++) kept.push(sorted[k])
-    }
-    i = j + 1
-  }
-  return kept
-}
+import { parseIntOrNull, parseDuration } from "@/lib/filterUrl"
+import { filterByMinDuration } from "@/lib/slotFilters"
+import { todayStr } from "@/lib/dateUtils"
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
-  const date = searchParams.get("date") ?? new Date().toISOString().split("T")[0]
+  const date = searchParams.get("date") ?? todayStr()
   const query = searchParams.get("query") ?? ""
-  const maxPrice = searchParams.get("maxPrice") ? Number(searchParams.get("maxPrice")) : null
-  const minCapacity = searchParams.get("minCapacity") ? Number(searchParams.get("minCapacity")) : null
-  const openHour = searchParams.get("openHour") ? Number(searchParams.get("openHour")) : null
-  const closeHour = searchParams.get("closeHour") ? Number(searchParams.get("closeHour")) : null
-  const durationParam = searchParams.get("durationFilter")
-  const durationFilter: "2h" | "3h" | "allnight" | null =
-    durationParam === "2h" || durationParam === "3h" || durationParam === "allnight" ? durationParam : null
+  const maxPrice = parseIntOrNull(searchParams.get("maxPrice"))
+  const minCapacity = parseIntOrNull(searchParams.get("minCapacity"))
+  const openHour = parseIntOrNull(searchParams.get("openHour"))
+  const closeHour = parseIntOrNull(searchParams.get("closeHour"))
+  const durationFilter = parseDuration(searchParams.get("durationFilter"))
   const area = findArea(searchParams.get("areaId"))
 
   const { venues: allVenues, errors } = await fetchAllAvailability(date)

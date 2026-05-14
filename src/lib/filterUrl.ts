@@ -1,6 +1,5 @@
 import { DurationFilter, SearchFilters, SortBy } from "@/lib/types"
-
-const TODAY = () => new Date().toISOString().split("T")[0]
+import { todayStr } from "@/lib/dateUtils"
 
 export function defaultFilters(): SearchFilters {
   return {
@@ -9,7 +8,7 @@ export function defaultFilters(): SearchFilters {
     minCapacity: null,
     openHour: null,
     closeHour: null,
-    date: TODAY(),
+    date: todayStr(),
     durationFilter: null,
     areaId: null,
     sortBy: "default",
@@ -17,15 +16,15 @@ export function defaultFilters(): SearchFilters {
   }
 }
 
-function parseDuration(v: string | null): DurationFilter {
+export function parseDuration(v: string | null): DurationFilter {
   return v === "2h" || v === "3h" || v === "allnight" ? v : null
 }
 
-function parseSort(v: string | null): SortBy {
+export function parseSort(v: string | null): SortBy {
   return v === "priceAsc" || v === "slotsDesc" || v === "nameAsc" ? v : "default"
 }
 
-function parseIntOrNull(v: string | null): number | null {
+export function parseIntOrNull(v: string | null): number | null {
   if (v === null || v === "") return null
   const n = Number(v)
   return Number.isFinite(n) ? n : null
@@ -38,7 +37,7 @@ export function filtersFromParams(params: URLSearchParams): SearchFilters {
     minCapacity: parseIntOrNull(params.get("minCapacity")),
     openHour: parseIntOrNull(params.get("openHour")),
     closeHour: parseIntOrNull(params.get("closeHour")),
-    date: params.get("date") ?? TODAY(),
+    date: params.get("date") ?? todayStr(),
     durationFilter: parseDuration(params.get("durationFilter")),
     areaId: params.get("areaId"),
     sortBy: parseSort(params.get("sortBy")),
@@ -53,7 +52,7 @@ export function filtersToParams(f: SearchFilters): URLSearchParams {
   if (f.minCapacity !== null) params.set("minCapacity", String(f.minCapacity))
   if (f.openHour !== null) params.set("openHour", String(f.openHour))
   if (f.closeHour !== null) params.set("closeHour", String(f.closeHour))
-  if (f.date && f.date !== TODAY()) params.set("date", f.date)
+  if (f.date && f.date !== todayStr()) params.set("date", f.date)
   if (f.durationFilter) params.set("durationFilter", f.durationFilter)
   if (f.areaId) params.set("areaId", f.areaId)
   if (f.sortBy !== "default") params.set("sortBy", f.sortBy)
