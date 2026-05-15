@@ -1,8 +1,36 @@
 import * as cheerio from "cheerio"
+import { Agent, fetch as undiciFetch } from "undici"
 import { AvailabilityProvider, ProviderVenue, TimeSlot } from "./types"
 
 const USER_AGENT =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+
+// Cloudflare は TLS フィンガープリントで Node.js のデフォルト fetch を弾く。
+// undici の Agent で Chrome 120 相当の Cipher Suite を指定してバイパスを試みる。
+const sproutAgent = new Agent({
+  connect: {
+    // Chrome 120 の TLS 1.2/1.3 cipher suites（順序重要）
+    ciphers: [
+      "TLS_AES_128_GCM_SHA256",
+      "TLS_AES_256_GCM_SHA384",
+      "TLS_CHACHA20_POLY1305_SHA256",
+      "ECDHE-ECDSA-AES128-GCM-SHA256",
+      "ECDHE-RSA-AES128-GCM-SHA256",
+      "ECDHE-ECDSA-AES256-GCM-SHA384",
+      "ECDHE-RSA-AES256-GCM-SHA384",
+      "ECDHE-ECDSA-CHACHA20-POLY1305",
+      "ECDHE-RSA-CHACHA20-POLY1305",
+      "ECDHE-RSA-AES128-SHA",
+      "ECDHE-RSA-AES256-SHA",
+      "AES128-GCM-SHA256",
+      "AES256-GCM-SHA384",
+      "AES128-SHA",
+      "AES256-SHA",
+    ].join(":"),
+    minVersion: "TLSv1.2" as const,
+  },
+  allowH2: true,
+})
 const RESERVE_URL = "https://www.sprout-rental.com/reserve/"
 
 // sid → rid → スタジオ表示名
@@ -44,13 +72,21 @@ const PACK_RE = /深夜\s*パック\s+([\d,]+)\s*円/
 const RID_RE = /[?&]rid=(\d+)/
 
 async function fetchHtml(url: string): Promise<{ ok: boolean; html: string; status: number }> {
-  const res = await fetch(url, {
-    cache: "no-store",
+  const res = await undiciFetch(url, {
+    dispatcher: sproutAgent,
     headers: {
       "User-Agent": USER_AGENT,
-      "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-      "Accept-Language": "ja-JP,ja;q=0.9,en-US;q=0.8",
+      "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+      "Accept-Language": "ja-JP,ja;q=0.9,en-US;q=0.8,en;q=0.7",
+      "Accept-Encoding": "gzip, deflate, br",
       "Referer": RESERVE_URL,
+      "sec-ch-ua": '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
+      "sec-ch-ua-mobile": "?0",
+      "sec-ch-ua-platform": '"Windows"',
+      "sec-fetch-dest": "document",
+      "sec-fetch-mode": "navigate",
+      "sec-fetch-site": "same-origin",
+      "upgrade-insecure-requests": "1",
     },
   })
   return { ok: res.ok, html: await res.text(), status: res.status }
@@ -149,7 +185,7 @@ export class SproutProvider implements AvailabilityProvider {
   async fetchAvailability(date: string): Promise<ProviderVenue[]> {
     const venues: ProviderVenue[] = []
 
-    await Promise.allSettled(
+    const results = await Promise.allSettled(
       STORES.map(async (store) => {
         const rooms = await fetchStoreSlots(store.sid, date)
         const roomsWithSlots = rooms.filter((r) => r.slots.length > 0)
@@ -172,6 +208,12 @@ export class SproutProvider implements AvailabilityProvider {
         })
       })
     )
+
+    // 全店舗が失敗した場合はエラーを上位に伝播（errors[] に表示させる）
+    const failures = results.filter((r): r is PromiseRejectedResult => r.status === "rejected")
+    if (failures.length === results.length && failures.length > 0) {
+      throw new Error(`Sprout: 全店舗取得失敗 (${failures.length}件) — ${failures[0].reason}`)
+    }
 
     return venues
   }
