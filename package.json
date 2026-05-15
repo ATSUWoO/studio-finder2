@@ -7,16 +7,19 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "update:studio1000": "node scripts/updateStudio1000Master.mjs"
+    "update:studio1000": "node scripts/updateStudio1000Master.mjs",
+    "new-provider": "node scripts/new-provider.mjs"
   },
   "dependencies": {
     "@radix-ui/react-select": "^2.2.6",
     "@radix-ui/react-slot": "^1.2.4",
     "@supabase/supabase-js": "^2.105.4",
+    "@types/leaflet.markercluster": "^1.5.6",
     "cheerio": "^1.2.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "leaflet": "^1.9.4",
+    "leaflet.markercluster": "^1.5.3",
     "lucide-react": "^1.14.0",
     "next": "16.2.6",
     "react": "19.2.4",

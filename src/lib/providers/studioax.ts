@@ -1,4 +1,5 @@
 import { AvailabilityProvider, ProviderVenue, TimeSlot } from "./types"
+import { fetchJson as httpGet } from "./_utils"
 import { getProviderVenues } from "@/lib/venueMaster"
 
 const BASE_URL = "https://yoyaku.rental-ax.com/wp-admin/admin-ajax.php"
@@ -9,12 +10,7 @@ const VENUE = getProviderVenues("studioax")[0]
 
 async function fetchJson<T>(action: string, roomId: number, date: string): Promise<T> {
   const url = `${BASE_URL}?action=${action}&studio_id=${roomId}&date=${date}`
-  const res = await fetch(url, {
-    cache: "no-store",
-    headers: { "User-Agent": USER_AGENT },
-  })
-  if (!res.ok) throw new Error(`StudioAX ${action} HTTP ${res.status}`)
-  const json = await res.json()
+  const json = await httpGet<{ data: T }>(url, { cache: "no-store", headers: { "User-Agent": USER_AGENT } })
   return json.data
 }
 

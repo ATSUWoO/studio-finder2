@@ -27,6 +27,9 @@ export interface Venue {
   rooms: Room[]
 }
 
+export type DurationFilter = "2h" | "3h" | "allnight" | null
+export type SortBy = "default" | "priceAsc" | "slotsDesc" | "nameAsc"
+
 export interface SearchFilters {
   query: string
   maxPrice: number | null
@@ -34,6 +37,10 @@ export interface SearchFilters {
   openHour: number | null
   closeHour: number | null
   date: string
+  durationFilter: DurationFilter
+  areaId: string | null
+  sortBy: SortBy
+  favoritesOnly: boolean
 }
 
 export interface VenueSearchResult extends Venue {
